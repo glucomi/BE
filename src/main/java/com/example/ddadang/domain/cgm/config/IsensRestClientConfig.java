@@ -44,7 +44,8 @@ public class IsensRestClientConfig {
 
     private ErrorHandler isensErrorHandler() {
         return (request, response) -> {
-            throw new IsensApiException(response.getStatusCode(), extractErrorCode(response), readBody(response));
+            String body = readBody(response);
+            throw new IsensApiException(response.getStatusCode(), extractErrorCode(body), extractMessage(body, body));
         };
     }
 
@@ -57,14 +58,15 @@ public class IsensRestClientConfig {
     }
 
     /**
-     * i-sens 에러 응답 바디 포맷이 명확히 문서화되어 있지 않아, "error" 필드가 있으면 그 값을,
-     * 없으면 raw body를 errorCode 자리에 넣는다. (401 invalid_token / expired_token,
-     * 400 required_input, 500 unexpected_error 문자열이 어딘가에는 포함되는 것으로 관찰됨)
+     * doc(이벤트 조회 API)에서 에러 응답 포맷이 {"code", "message", "param"}으로 확인됐다.
+     * 다른 엔드포인트에서 다른 포맷("error"/"error_code")이 관찰될 수 있어 fallback으로 남겨둔다.
      */
-    private String extractErrorCode(ClientHttpResponse response) {
-        String body = readBody(response);
+    private String extractErrorCode(String body) {
         try {
             JsonNode node = objectMapper.readTree(body);
+            if (node.hasNonNull("code")) {
+                return node.get("code").asText();
+            }
             if (node.hasNonNull("error")) {
                 return node.get("error").asText();
             }
@@ -75,5 +77,18 @@ public class IsensRestClientConfig {
             // body가 JSON이 아닌 경우 raw body를 그대로 사용
         }
         return body.isBlank() ? "unknown_error" : body;
+    }
+
+    private String extractMessage(String body, String fallback) {
+        try {
+            JsonNode node = objectMapper.readTree(body);
+            if (node.hasNonNull("message")) {
+                String param = node.hasNonNull("param") ? " (param: " + node.get("param").asText() + ")" : "";
+                return node.get("message").asText() + param;
+            }
+        } catch (IOException ignored) {
+            // body가 JSON이 아닌 경우 raw body를 그대로 사용
+        }
+        return fallback;
     }
 }

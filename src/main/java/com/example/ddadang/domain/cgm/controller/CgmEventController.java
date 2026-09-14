@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,10 +24,11 @@ public class CgmEventController {
     @Operation(
         summary = "이벤트 데이터 조회",
         description = "i-sens /v1/public/events를 실시간으로 조회한다(자체 DB 미적재). "
-            + "eventType은 비워두면 전체 조회, 지정 시 bgm/exercise/insulin/ketone/meal/medicine/memo 중 하나."
+            + "eventType은 비워두면 전체 조회, 지정 시 bgm/exercise/insulin/ketone/meal/medicine/memo 중 하나. "
+            + "응답은 문서상 평평한 배열이 아니라 카테고리(bgm/exercise/ketone/meal 등)를 키로 하는 객체로 내려온다(실측 확인)."
     )
     @GetMapping("/api/cgm/events")
-    public List<CgmEventResponse> getEvents(
+    public Map<String, List<CgmEventResponse>> getEvents(
         @RequestParam String isensUserId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime start,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime end,

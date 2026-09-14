@@ -1,10 +1,12 @@
 package com.example.ddadang.domain.cgm.service;
 
+import com.example.ddadang.domain.cgm.dto.response.CgmEventResponse;
 import com.example.ddadang.domain.cgm.dto.response.CgmSampleResponse;
 import com.example.ddadang.domain.cgm.dto.response.SensorInfoResponse;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
@@ -48,6 +50,33 @@ public class IsensCgmApiClient {
             .header(HttpHeaders.AUTHORIZATION, bearer(accessToken))
             .retrieve()
             .toBodilessEntity();
+    }
+
+    /**
+     * GET /v1/public/events — 최대 3개월 범위 제한이 있으므로 호출 전 CgmDateRangeSplitter로 쪼개서 넣어야 한다.
+     * eventType이 null/blank면 전체 이벤트 타입을 조회한다.
+     *
+     * <p>개발가이드 문서는 응답을 평평한 배열이라고 설명하지만, 실제 샌드박스 응답은
+     * 카테고리(bgm/exercise/ketone/meal 등)를 키로 하는 객체로 내려온다(실측 확인).
+     * event_type 필터를 지정했을 때도 동일하게 객체 형태로 내려오는지는 미검증.
+     */
+    public Map<String, List<CgmEventResponse>> fetchEvents(
+        String accessToken, OffsetDateTime start, OffsetDateTime end, String eventType
+    ) {
+        return isensApiRestClient.get()
+            .uri(uriBuilder -> {
+                uriBuilder.path("/v1/public/events")
+                    .queryParam("start", DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(start))
+                    .queryParam("end", DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(end));
+                if (eventType != null && !eventType.isBlank()) {
+                    uriBuilder.queryParam("event_type", eventType);
+                }
+                return uriBuilder.build();
+            })
+            .header(HttpHeaders.AUTHORIZATION, bearer(accessToken))
+            .retrieve()
+            .body(new ParameterizedTypeReference<Map<String, List<CgmEventResponse>>>() {
+            });
     }
 
     /**

@@ -3,7 +3,10 @@ package com.example.ddadang.domain.cgm.service;
 import com.example.ddadang.domain.cgm.dto.response.CgmEventResponse;
 import com.example.ddadang.domain.cgm.util.CgmDateRangeSplitter;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,13 +21,18 @@ public class CgmEventService {
     private final IsensAuthService isensAuthService;
     private final IsensCgmApiClient isensCgmApiClient;
 
-    public List<CgmEventResponse> getEvents(
+    public Map<String, List<CgmEventResponse>> getEvents(
         String isensUserId, OffsetDateTime start, OffsetDateTime end, String eventType
     ) {
         String accessToken = isensAuthService.getValidAccessToken(isensUserId);
-        return CgmDateRangeSplitter.split(start, end).stream()
-            .map(range -> isensCgmApiClient.fetchEvents(accessToken, range.start(), range.end(), eventType))
-            .flatMap(List::stream)
-            .toList();
+
+        Map<String, List<CgmEventResponse>> merged = new LinkedHashMap<>();
+        for (var range : CgmDateRangeSplitter.split(start, end)) {
+            Map<String, List<CgmEventResponse>> chunk =
+                isensCgmApiClient.fetchEvents(accessToken, range.start(), range.end(), eventType);
+            chunk.forEach((category, events) ->
+                merged.computeIfAbsent(category, key -> new ArrayList<>()).addAll(events));
+        }
+        return merged;
     }
 }
