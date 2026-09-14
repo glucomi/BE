@@ -2,6 +2,8 @@ package com.example.ddadang.domain.cgm.controller;
 
 import com.example.ddadang.domain.cgm.dto.response.CgmEventResponse;
 import com.example.ddadang.domain.cgm.service.CgmEventService;
+import com.example.ddadang.domain.cgm.status.CgmSuccessStatus;
+import com.example.ddadang.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -10,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,17 +27,23 @@ public class CgmEventController {
     @Operation(
         summary = "이벤트 데이터 조회",
         description = "i-sens /v1/public/events를 실시간으로 조회한다(자체 DB 미적재). "
-            + "eventType은 비워두면 전체 조회, 지정 시 bgm/exercise/insulin/ketone/meal/medicine/memo 중 하나. "
-            + "응답은 문서상 평평한 배열이 아니라 카테고리(bgm/exercise/ketone/meal 등)를 키로 하는 객체로 내려온다(실측 확인)."
+            + "eventType은 비워두면 전체 조회, 지정 시 bgm/exercise/insulin/ketone/meal/medicine/memo 중 하나 "
+            + "(그 외 값이면 400). 응답은 문서상 평평한 배열이 아니라 카테고리를 키로 하는 객체로 내려온다(실측 확인)."
     )
     @GetMapping("/api/cgm/events")
-    public Map<String, List<CgmEventResponse>> getEvents(
+    public ResponseEntity<ApiResponse<Map<String, List<CgmEventResponse>>>> getEvents(
         @RequestParam String isensUserId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime start,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime end,
         @Parameter(description = "bgm/exercise/insulin/ketone/meal/medicine/memo 중 하나, 비워두면 전체 조회")
         @RequestParam(required = false) String eventType
     ) {
-        return cgmEventService.getEvents(isensUserId, start, end, eventType);
+        Map<String, List<CgmEventResponse>> events = cgmEventService.getEvents(isensUserId, start, end, eventType);
+
+        boolean specificTypeRequested = eventType != null && !eventType.isBlank();
+        if (specificTypeRequested && events.isEmpty()) {
+            return ApiResponse.success(CgmSuccessStatus.EVENT_EMPTY, events);
+        }
+        return ApiResponse.success(events);
     }
 }

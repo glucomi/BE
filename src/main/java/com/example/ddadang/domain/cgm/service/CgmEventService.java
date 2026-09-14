@@ -1,7 +1,9 @@
 package com.example.ddadang.domain.cgm.service;
 
 import com.example.ddadang.domain.cgm.dto.response.CgmEventResponse;
+import com.example.ddadang.domain.cgm.exception.InvalidEventTypeException;
 import com.example.ddadang.domain.cgm.util.CgmDateRangeSplitter;
+import com.example.ddadang.domain.cgm.util.CgmEventType;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -28,6 +30,10 @@ public class CgmEventService {
     public Map<String, List<CgmEventResponse>> getEvents(
         String isensUserId, OffsetDateTime start, OffsetDateTime end, String eventType
     ) {
+        if (eventType != null && !eventType.isBlank() && !CgmEventType.isValid(eventType)) {
+            throw new InvalidEventTypeException();
+        }
+
         String accessToken = isensAuthService.getValidAccessToken(isensUserId);
 
         Map<String, List<CgmEventResponse>> merged = new LinkedHashMap<>();

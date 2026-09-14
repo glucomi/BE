@@ -1,17 +1,18 @@
 package com.example.ddadang.domain.cgm.controller;
 
 import com.example.ddadang.domain.cgm.entity.CgmToken;
+import com.example.ddadang.domain.cgm.exception.InvalidOAuthStateException;
 import com.example.ddadang.domain.cgm.service.IsensAuthService;
+import com.example.ddadang.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "CGM 인증", description = "아이센스 OAuth 2.0 인증 플로우 (로그인 리다이렉트 / 콜백)")
@@ -41,7 +42,7 @@ public class CgmAuthController {
             + "access token / refresh token으로 교환해 저장한 뒤 isensUserId를 반환한다."
     )
     @GetMapping("/api/cgm/oauth/callback")
-    public CgmOAuthCallbackResult callback(
+    public ResponseEntity<ApiResponse<CgmOAuthCallbackResult>> callback(
         @RequestParam String code,
         @RequestParam String state,
         HttpSession session
@@ -53,16 +54,9 @@ public class CgmAuthController {
         session.removeAttribute(STATE_SESSION_KEY);
 
         CgmToken token = isensAuthService.exchangeCodeForToken(code);
-        return new CgmOAuthCallbackResult(token.getIsensUserId());
+        return ApiResponse.success(new CgmOAuthCallbackResult(token.getIsensUserId()));
     }
 
     public record CgmOAuthCallbackResult(String isensUserId) {
-    }
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public static class InvalidOAuthStateException extends RuntimeException {
-        public InvalidOAuthStateException() {
-            super("state 값이 일치하지 않습니다. CSRF 공격이 의심되거나 세션이 만료되었습니다.");
-        }
     }
 }

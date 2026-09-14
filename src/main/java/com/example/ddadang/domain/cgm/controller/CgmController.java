@@ -7,6 +7,8 @@ import com.example.ddadang.domain.cgm.repository.CgmReadingRepository;
 import com.example.ddadang.domain.cgm.service.CgmSyncService;
 import com.example.ddadang.domain.cgm.service.IsensAuthService;
 import com.example.ddadang.domain.cgm.service.IsensCgmApiClient;
+import com.example.ddadang.global.response.ApiResponse;
+import com.example.ddadang.global.response.SuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -16,11 +18,10 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -43,12 +44,12 @@ public class CgmController {
             + "3개월 초과 구간은 자동으로 분할 호출 후 병합하고, 이미 저장된 시리얼+순번은 건너뛴다."
     )
     @PostMapping("/api/cgm/sync")
-    public CgmSyncResultResponse sync(
+    public ResponseEntity<ApiResponse<CgmSyncResultResponse>> sync(
         @RequestParam String isensUserId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime start,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime end
     ) {
-        return cgmSyncService.syncCgmData(isensUserId, start, end);
+        return ApiResponse.success(cgmSyncService.syncCgmData(isensUserId, start, end));
     }
 
     @Operation(
@@ -58,7 +59,7 @@ public class CgmController {
             + "Swagger 기본 예시값(\"string\")을 그대로 넣으면 정렬 필드 오류가 난다."
     )
     @GetMapping("/api/cgm/readings")
-    public Page<CgmReadingResponse> getReadings(
+    public ResponseEntity<ApiResponse<Page<CgmReadingResponse>>> getReadings(
         @RequestParam String isensUserId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime start,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime end,
@@ -66,9 +67,10 @@ public class CgmController {
         @Parameter(description = "sort는 비워두거나 eventAt,desc 같은 실제 필드명을 사용할 것")
         Pageable pageable
     ) {
-        return cgmReadingRepository
+        Page<CgmReadingResponse> readings = cgmReadingRepository
             .findByIsensUserIdAndEventAtBetweenOrderByEventAtDesc(isensUserId, start, end, pageable)
             .map(CgmReadingResponse::from);
+        return ApiResponse.success(readings);
     }
 
     @Operation(
@@ -77,10 +79,11 @@ public class CgmController {
             + "운영 환경에는 존재하지 않으므로 샌드박스/개발 환경에서만 사용할 것."
     )
     @PostMapping("/api/cgm/sandbox/samples")
-    @ResponseStatus(HttpStatus.CREATED)
-    public SandboxSampleResponse generateSandboxSamples(@RequestParam String isensUserId) {
+    public ResponseEntity<ApiResponse<SandboxSampleResponse>> generateSandboxSamples(
+        @RequestParam String isensUserId
+    ) {
         String accessToken = isensAuthService.getValidAccessToken(isensUserId);
         isensCgmApiClient.generateSandboxSamples(accessToken);
-        return SandboxSampleResponse.completed();
+        return ApiResponse.success(SuccessStatus.CREATED, SandboxSampleResponse.completed());
     }
 }
