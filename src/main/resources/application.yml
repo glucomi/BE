@@ -17,3 +17,11 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+isens:
+  auth-base-url: https://accounts.i-sens.com
+  api-base-url: https://api.i-sens.com
+  client-id: ${ISENS_CLIENT_ID}
+  client-secret: ${ISENS_CLIENT_SECRET}
+  redirect-uri: ${ISENS_REDIRECT_URI}
+  scope: offline_access
