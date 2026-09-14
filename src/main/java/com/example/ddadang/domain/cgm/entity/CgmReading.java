@@ -16,7 +16,15 @@ import lombok.NoArgsConstructor;
 
 /**
  * i-sens CGM API에서 받아온 원시 혈당 데이터를 자체 DB에 적재한 레코드.
- * stage / trend / error_code / min_max_flag는 enum 매핑표가 미확인 상태라 raw int로 저장한다.
+ *
+ * <p>필드 의미(doc116 확인됨):
+ * <ul>
+ *   <li>stage: 1=스무딩 진행 중(동일 serial_number+seq_number 값이 최대 6회까지 미세 조정될 수 있음,
+ *       stage=2가 될 때까지 {@link #updateFrom}으로 덮어써야 함), 2=스무딩 완료(최종 확정)</li>
+ *   <li>trend: 0=Unknown, 1=빠르게 감소, 2=감소, 3=서서히 감소, 4=안정적, 5=서서히 증가, 6=증가, 7=빠르게 증가</li>
+ *   <li>min_max_flag: 0=정상범위(40~500), 1=40 미만, 2=500 초과</li>
+ *   <li>error_code: 상세 enum 매핑표 아직 미확인, raw int로 보관</li>
+ * </ul>
  */
 @Entity
 @Table(
@@ -73,21 +81,43 @@ public class CgmReading {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
     public static CgmReading of(String isensUserId, CgmSampleResponse sample) {
         CgmReading reading = new CgmReading();
         reading.isensUserId = isensUserId;
         reading.serialNumber = sample.serialNumber();
         reading.seqNumber = sample.seqNumber();
-        reading.eventAt = sample.eventAt();
-        reading.tzOffset = sample.tzOffset();
-        reading.stage = sample.stage();
-        reading.initialValue = sample.initialValue();
-        reading.value = sample.value();
-        reading.trendRate = sample.trendRate();
-        reading.trend = sample.trend();
-        reading.errorCode = sample.errorCode();
-        reading.minMaxFlag = sample.minMaxFlag();
-        reading.createdAt = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
+        reading.createdAt = now;
+        reading.updatedAt = now;
+        reading.applyValues(sample);
         return reading;
+    }
+
+    /**
+     * stage=1(스무딩 진행 중) 구간에서는 동일 serial_number+seq_number로 최대 6회까지 값이
+     * 미세 조정되어 재수신될 수 있다. stage=2(확정)에 도달하기 전까지는 최신 값으로 덮어쓴다.
+     */
+    public void updateFrom(CgmSampleResponse sample) {
+        applyValues(sample);
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public boolean isFinalized() {
+        return this.stage != null && this.stage == 2;
+    }
+
+    private void applyValues(CgmSampleResponse sample) {
+        this.eventAt = sample.eventAt();
+        this.tzOffset = sample.tzOffset();
+        this.stage = sample.stage();
+        this.initialValue = sample.initialValue();
+        this.value = sample.value();
+        this.trendRate = sample.trendRate();
+        this.trend = sample.trend();
+        this.errorCode = sample.errorCode();
+        this.minMaxFlag = sample.minMaxFlag();
     }
 }
