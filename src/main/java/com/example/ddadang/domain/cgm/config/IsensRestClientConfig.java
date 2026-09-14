@@ -13,13 +13,18 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClient.ResponseSpec.ErrorHandler;
 
+/**
+ * Spring Boot 4.x는 기본 Jackson 빈을 Jackson 3(tools.jackson.databind.ObjectMapper)로 구성하므로
+ * classic com.fasterxml.jackson.databind.ObjectMapper 빈은 컨텍스트에 없다. 에러 바디를
+ * best-effort로 파싱하는 용도일 뿐이라 DI 없이 직접 생성해 사용한다.
+ */
 @Configuration
 @EnableConfigurationProperties(IsensProperties.class)
 @RequiredArgsConstructor
 public class IsensRestClientConfig {
 
     private final IsensProperties isensProperties;
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Bean
     public RestClient isensAuthRestClient() {
