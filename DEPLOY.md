@@ -57,20 +57,74 @@ vi .env   # .env.prod.example 내용을 참고해 실제 값 채워넣기
 
 `GITHUB_TOKEN`은 GHCR push/pull용으로 Actions가 자동으로 제공하므로 별도 등록 불필요.
 
-## 3. i-sens 개발자센터에 redirect_uri 등록
+## 3. 스왑 (OOM 방지 — 필수)
 
-EC2 탄력적 IP 기준으로 콜백 URL을 등록해야 실제로 연동이 동작한다.
+t3.micro는 RAM 908Mi에 스왑이 기본 0이라, MySQL+앱을 메모리 제한 없이 같이 띄우면 OOM으로 인스턴스가
+통째로 응답 불능이 되고 `restart: unless-stopped`가 계속 재시작을 시도하면서 재부팅해도 복구가 안 되는
+크래시 루프에 빠진다 (실제로 한 번 겪음). 인스턴스 준비 단계에서 반드시 스왑부터 만들어 둘 것.
 
+```bash
+sudo fallocate -l 1G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+echo "/swapfile none swap sw 0 0" | sudo tee -a /etc/fstab
 ```
-http://<EC2 탄력적 IP>:8080/api/cgm/oauth/callback
+
+`docker-compose.prod.yml`에도 이미 컨테이너별 `mem_limit`과 JVM `-Xmx256m`, MySQL
+`innodb_buffer_pool_size=128M`이 반영되어 있음 — 이 값들을 건드릴 땐 908Mi(+스왑 1G) 예산을
+넘지 않는지 계산할 것.
+
+## 4. HTTPS (도메인 없이 — nginx + Let's Encrypt + sslip.io)
+
+도메인을 따로 사지 않고도 무료로 HTTPS를 쓸 수 있다. AWS가 자동으로 붙여주는
+`ec2-*.compute.amazonaws.com` 퍼블릭 DNS는 Let's Encrypt 정책상 인증서 발급이 **막혀 있어서**
+사용 불가 — 대신 IP를 자동으로 도메인처럼 매핑해주는 **sslip.io**(가입 불필요)를 쓴다.
+
+```bash
+sudo apt-get install -y nginx certbot python3-certbot-nginx
 ```
 
-`.env`의 `ISENS_REDIRECT_URI`도 동일한 값으로 맞출 것.
+`/etc/nginx/sites-available/ddadang` (80번에서 8080으로 프록시):
 
-## 4. 배포 확인
+```nginx
+server {
+    listen 80;
+    server_name <EC2 탄력적 IP를 -로 이은 값>.sslip.io;  # 예: 54-116-228-101.sslip.io
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+```bash
+sudo ln -sf /etc/nginx/sites-available/ddadang /etc/nginx/sites-enabled/ddadang
+sudo rm -f /etc/nginx/sites-enabled/default
+sudo nginx -t && sudo systemctl reload nginx
+
+sudo certbot --nginx -d <위의 sslip.io 도메인> --non-interactive --agree-tos -m <연락받을 이메일> --redirect
+```
+
+인증서는 자동 갱신 타이머가 같이 설정된다. 보안 그룹에 **80, 443** 인바운드도 열어둘 것.
+
+발급 후 `.env`의 `ISENS_REDIRECT_URI`를 https 도메인 기준으로 바꾸고 앱만 재기동:
+
+```bash
+sed -i 's#ISENS_REDIRECT_URI=.*#ISENS_REDIRECT_URI=https://<sslip.io 도메인>/api/cgm/oauth/callback#' .env
+docker compose -f docker-compose.prod.yml up -d --force-recreate app
+```
+
+i-sens 개발자센터 콘솔의 Callback URL도 이 https 주소로 등록/변경할 것.
+
+## 5. 배포 확인
 
 `main`에 push하면 Actions 탭에서 진행 상황 확인 가능. 완료 후:
 
 ```bash
-curl http://<EC2 탄력적 IP>:8080/api/cgm/readings
+curl https://<sslip.io 도메인>/api/cgm/readings
 ```
