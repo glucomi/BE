@@ -2,7 +2,14 @@ HELP.md
 .gradle
 build/
 .env
+.env.prod
+!.env.prod.example
 !gradle/wrapper/gradle-wrapper.jar
+
+### 임시/테스트용 화면·스크립트 (커밋 금지) ###
+/local/
+*.local.html
+*.scratch.html
 !**/src/main/**/build/
 !**/src/test/**/build/
 
