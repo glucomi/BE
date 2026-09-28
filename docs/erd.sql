@@ -12,6 +12,7 @@ CREATE TABLE `member` (
     `diabetes_type`         VARCHAR(30)  NULL COMMENT '당뇨 유형(TYPE1/TYPE2_INSULIN/TYPE2_NO_INSULIN/PRE/GESTATIONAL/NONE)',
     `target_glucose_min`    INT          NULL COMMENT '목표 혈당 하한(mg/dL)',
     `target_glucose_max`    INT          NULL COMMENT '목표 혈당 상한(mg/dL)',
+    `signup_completed`      BOOLEAN      NOT NULL DEFAULT FALSE COMMENT '약관 동의(회원가입) 완료 여부',
     `onboarding_completed`  BOOLEAN      NOT NULL DEFAULT FALSE COMMENT '큐레이션 온보딩 완료 여부',
     `push_glucose_enabled`  BOOLEAN      NOT NULL DEFAULT TRUE COMMENT '혈당 관련 푸시 수신 여부',
     `marketing_agreed`      BOOLEAN      NOT NULL DEFAULT FALSE COMMENT '마케팅 수신 동의 여부',
@@ -44,6 +45,17 @@ CREATE TABLE `member_withdrawal` (
     `updated_at`  DATETIME     NOT NULL COMMENT '수정 일시',
     PRIMARY KEY (`id`)
 ) COMMENT '회원 탈퇴';
+
+CREATE TABLE `refresh_token` (
+    `id`          BIGINT       NOT NULL AUTO_INCREMENT COMMENT 'refresh token ID',
+    `member_id`   BIGINT       NOT NULL COMMENT '회원 ID',
+    `token`       VARCHAR(500) NOT NULL COMMENT 'refresh token',
+    `expires_at`  DATETIME     NOT NULL COMMENT '만료 일시',
+    `created_at`  DATETIME     NOT NULL COMMENT '생성 일시',
+    `updated_at`  DATETIME     NOT NULL COMMENT '수정 일시',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_refresh_token_member` (`member_id`)
+) COMMENT 'refresh token';
 
 CREATE TABLE `cgm_connection` (
     `id`                 BIGINT        NOT NULL AUTO_INCREMENT COMMENT 'CGM 연결 ID',
@@ -268,6 +280,7 @@ CREATE TABLE `exercise_record` (
 -- Foreign Keys
 ALTER TABLE `member_agreement`   ADD CONSTRAINT `fk_member_agreement_member`   FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
 ALTER TABLE `member_withdrawal`  ADD CONSTRAINT `fk_member_withdrawal_member`  FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
+ALTER TABLE `refresh_token`      ADD CONSTRAINT `fk_refresh_token_member`      FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
 ALTER TABLE `cgm_connection`     ADD CONSTRAINT `fk_cgm_connection_member`     FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
 ALTER TABLE `cgm_reading`        ADD CONSTRAINT `fk_cgm_reading_member`        FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
 ALTER TABLE `cgm_reading`        ADD CONSTRAINT `fk_cgm_reading_connection`    FOREIGN KEY (`cgm_connection_id`) REFERENCES `cgm_connection` (`id`);

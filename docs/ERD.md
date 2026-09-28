@@ -4,6 +4,7 @@
 erDiagram
     member ||--o{ member_agreement : agrees
     member ||--o| member_withdrawal : withdraws
+    member ||--o| refresh_token : "has"
     member ||--o{ cgm_connection : connects
     member ||--o{ cgm_reading : owns
     cgm_connection ||--o{ cgm_reading : syncs
@@ -44,6 +45,7 @@ erDiagram
         varchar diabetes_type "TYPE1/TYPE2_INSULIN/TYPE2_NO_INSULIN/PRE/GESTATIONAL/NONE"
         int target_glucose_min "mg/dL"
         int target_glucose_max "mg/dL"
+        boolean signup_completed "약관 동의 완료"
         boolean onboarding_completed "큐레이션 4step 완료"
         boolean push_glucose_enabled "MO-ALARM"
         boolean marketing_agreed "MO-ALARM"
@@ -63,6 +65,12 @@ erDiagram
         bigint member_id FK
         varchar reason
         varchar detail
+    }
+    refresh_token {
+        bigint id PK
+        bigint member_id FK "UK"
+        varchar token
+        datetime expires_at
     }
 
     cgm_connection {
@@ -222,7 +230,7 @@ erDiagram
 
 | 도메인 | 테이블 | 역할 |
 |---|---|---|
-| **member** | member, member_agreement, member_withdrawal | 가입·탈퇴, 프로필, 목표 혈당, 알림 설정 |
+| **member** | member, member_agreement, member_withdrawal, refresh_token | 가입·탈퇴, 프로필, 목표 혈당, 알림 설정 |
 | **glucose** | cgm_connection, cgm_reading | 센서 연결·동기화, 그래프 지표 계산 |
 | **record** | food, favorite_food, meal_record, meal_record_item, meal_record_photo, insulin_product, member_insulin, insulin_record, member_medication, medication_record, exercise, exercise_record, glucose_record, weight_record, memo_record, memo_record_photo | 사용자가 직접 입력하는 기록 7종 |
 | **home** | (테이블 없음) | 오늘의 기록 타임라인, 큐레이션 카드 |
