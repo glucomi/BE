@@ -91,7 +91,7 @@ erDiagram
         bigint cgm_connection_id FK
         varchar serial_number
         bigint seq_number
-        datetime measured_at
+        datetime event_at "측정 시각"
         int tz_offset
         int stage
         double initial_value
@@ -242,7 +242,7 @@ erDiagram
 
 ## 설계 메모
 - **기록 7종은 테이블 분리.** 홈 "오늘의 기록" 타임라인은 날짜 기준으로 각 테이블을 조회해서 서비스 레이어에서 시간순으로 병합한다.
-- **기존 CGM 테이블 변경:** `cgm_token`은 `cgm_connection`으로 흡수하고, `cgm_reading.isens_user_id`는 `member_id` + `cgm_connection_id`로 바꾼다. UK는 `(cgm_connection_id, serial_number, seq_number)`.
+- **CGM 테이블:** `cgm_token`은 `cgm_connection`으로 흡수했고, `cgm_reading`은 `member_id` + `cgm_connection_id`로 회원과 연결한다. UK는 `(cgm_connection_id, serial_number, seq_number)`, 조회용 인덱스 `(member_id, event_at)`.
 - **홈 그래프 지표**(혈당 점수, 최고/평균 혈당, 스파이크 횟수, 탄수화물)는 저장하지 않고 `cgm_reading`과 `meal_record_item`에서 계산한다. 성능 문제가 생기면 일별 집계 테이블(`daily_glucose_summary`)을 추가한다.
 - **식사 기록 영양소는 스냅샷으로 저장.** 음식 DB 값이 바뀌어도 과거 기록은 유지된다.
 - **큐레이션 카드**(식사 확인, 산책 제안, 식간 관리)는 조회 시점에 규칙으로 계산하므로 테이블이 필요 없다.

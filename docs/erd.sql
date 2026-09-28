@@ -80,7 +80,7 @@ CREATE TABLE `cgm_reading` (
     `cgm_connection_id`  BIGINT       NOT NULL COMMENT 'CGM 연결 ID',
     `serial_number`      VARCHAR(100) NOT NULL COMMENT '센서 시리얼 번호',
     `seq_number`         BIGINT       NOT NULL COMMENT '측정 순번',
-    `measured_at`        DATETIME     NOT NULL COMMENT '측정 일시',
+    `event_at`           DATETIME     NOT NULL COMMENT '측정 일시',
     `tz_offset`          INT          NULL COMMENT '타임존 오프셋',
     `stage`              INT          NULL COMMENT '스무딩 단계(1=진행중, 2=확정)',
     `initial_value`      DOUBLE       NULL COMMENT '최초 측정값',
@@ -92,7 +92,8 @@ CREATE TABLE `cgm_reading` (
     `created_at`         DATETIME     NOT NULL COMMENT '생성 일시',
     `updated_at`         DATETIME     NOT NULL COMMENT '수정 일시',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_cgm_reading_conn_serial_seq` (`cgm_connection_id`, `serial_number`, `seq_number`)
+    UNIQUE KEY `uk_cgm_reading_conn_serial_seq` (`cgm_connection_id`, `serial_number`, `seq_number`),
+    KEY `idx_cgm_reading_member_event_at` (`member_id`, `event_at`)
 ) COMMENT 'CGM 혈당';
 
 CREATE TABLE `food` (
