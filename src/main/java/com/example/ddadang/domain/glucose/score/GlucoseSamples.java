@@ -13,19 +13,18 @@ import java.util.Map;
  */
 public final class GlucoseSamples {
 
-    static final double BG_MIN = 10;
-    static final double BG_MAX = 600;
-
     private GlucoseSamples() {
     }
 
-    public static List<GlucoseSample> clean(List<CgmReading> readings, OffsetDateTime start, OffsetDateTime end) {
+    public static List<GlucoseSample> clean(
+        List<CgmReading> readings, OffsetDateTime start, OffsetDateTime end, GlucoseAnalysisProperties.Sensor sensor
+    ) {
         Map<Instant, GlucoseSample> byInstant = new LinkedHashMap<>();
         readings.stream()
             .filter(reading -> !reading.getEventAt().isBefore(start) && reading.getEventAt().isBefore(end))
             .filter(reading -> reading.getValue() != null)
             .filter(reading -> reading.getErrorCode() == null || reading.getErrorCode() == 0)
-            .filter(reading -> reading.getValue() >= BG_MIN && reading.getValue() <= BG_MAX)
+            .filter(reading -> reading.getValue() >= sensor.bgMin() && reading.getValue() <= sensor.bgMax())
             .sorted(Comparator.comparing(CgmReading::getEventAt))
             .forEach(reading -> byInstant.putIfAbsent(
                 reading.getEventAt().toInstant(), new GlucoseSample(reading.getEventAt(), reading.getValue())

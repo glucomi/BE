@@ -1,12 +1,14 @@
 package com.example.ddadang.domain.glucose.score;
 
 /**
- * @param score     0~100. FINAL/PROVISIONAL일 때만 값이 있다
- * @param deductions 항목별 감점(양수). 점수가 없으면 null
+ * 계산값은 반올림하지 않은 소수로 보관한다. 화면 표시용 반올림은 응답 변환 시점에만 한다.
+ *
+ * @param score      0~100 소수. FINAL/PROVISIONAL일 때만 값이 있다
+ * @param deductions 항목별 감점(양수, 소수). 점수가 없으면 null
  */
 public record GlucoseScore(
     GlucoseScoreStatus status,
-    Integer score,
+    Double score,
     Deductions deductions
 ) {
 

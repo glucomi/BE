@@ -6,6 +6,7 @@ import com.example.ddadang.domain.glucose.score.DailyGlucoseAnalysis;
 import com.example.ddadang.domain.glucose.service.GlucoseAnalysisService;
 import com.example.ddadang.domain.glucose.service.GlucoseQueryService;
 import com.example.ddadang.domain.home.dto.HomeResponse;
+import com.example.ddadang.domain.home.dto.HomeResponse.Deductions;
 import com.example.ddadang.domain.home.dto.HomeResponse.Graph;
 import com.example.ddadang.domain.home.dto.HomeResponse.Meal;
 import com.example.ddadang.domain.home.dto.HomeResponse.Point;
@@ -74,16 +75,21 @@ public class HomeService {
                 ? null : new TargetRange(member.targetGlucoseMin(), member.targetGlucoseMax()),
             new Graph(toPoints(readings), hasReadings ? stats.getMin() : null, max),
             new Summary(
-                analysis.score().score(),
+                roundForDisplay(analysis.score().score()),
                 analysis.score().status(),
-                analysis.score().deductions(),
+                Deductions.forDisplay(analysis.score().deductions()),
                 max,
-                analysis.averageGlucose(),
+                roundForDisplay(analysis.averageGlucose()),
                 analysis.spikeCount(),
                 sumCarbohydrate(meals)
             ),
             meals.stream().map(this::toMeal).toList()
         );
+    }
+
+    /** 계산은 소수로 유지하고 화면 표시 단계에서만 정수 반올림한다. */
+    private Integer roundForDisplay(Double value) {
+        return value == null ? null : (int) Math.round(value);
     }
 
     private Sensor toSensor(Long memberId, LocalDate date) {
