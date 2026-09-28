@@ -33,3 +33,8 @@ jwt:
 
 kakao:
   api-base-url: https://kapi.kakao.com
+
+# 음식 DB(식약처) 적재 전까지 샘플 음식 데이터 사용
+food:
+  sample-data:
+    enabled: true
