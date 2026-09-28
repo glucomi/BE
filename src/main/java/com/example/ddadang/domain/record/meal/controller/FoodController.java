@@ -88,6 +88,15 @@ public class FoodController {
         return ApiResponse.success(null);
     }
 
+    @Operation(summary = "최근 먹은 음식 목록", description = "식사 기록에 담았던 음식을 가장 최근에 먹은 순으로 중복 없이 조회한다.")
+    @GetMapping("/api/foods/recent")
+    public ResponseEntity<ApiResponse<Page<FoodSummaryResponse>>> getRecentFoods(
+        @AuthenticationPrincipal Long memberId,
+        @ParameterObject @PageableDefault(size = 20) Pageable pageable
+    ) {
+        return ApiResponse.success(foodService.getRecentFoods(memberId, pageable));
+    }
+
     @Operation(summary = "직접 등록한 음식 목록", description = "최근 등록 순.")
     @GetMapping("/api/foods/custom")
     public ResponseEntity<ApiResponse<Page<FoodSummaryResponse>>> getCustomFoods(
