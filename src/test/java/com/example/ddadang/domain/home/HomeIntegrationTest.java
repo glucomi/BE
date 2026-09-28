@@ -20,14 +20,31 @@ import com.example.ddadang.domain.record.meal.enums.FoodUnit;
 import com.example.ddadang.domain.record.meal.repository.FoodRepository;
 import com.example.ddadang.support.IntegrationTest;
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
 
 class HomeIntegrationTest extends IntegrationTest {
+
+    /** 현재 시각 고정: 2026-09-29 10:00 KST → 9/28은 지난 날(확정), 9/29는 오늘(잠정) */
+    @TestConfiguration
+    static class FixedClockConfig {
+
+        @Bean
+        @Primary
+        Clock fixedClock() {
+            return Clock.fixed(Instant.parse("2026-09-29T01:00:00Z"), ZoneId.of("Asia/Seoul"));
+        }
+    }
 
     @Autowired
     private CgmConnectionRepository cgmConnectionRepository;
@@ -75,10 +92,51 @@ class HomeIntegrationTest extends IntegrationTest {
             .andExpect(jsonPath("$.result.graph.minGlucose").value(90))
             .andExpect(jsonPath("$.result.graph.maxGlucose").value(180))
             .andExpect(jsonPath("$.result.summary.maxGlucose").value(180))
-            .andExpect(jsonPath("$.result.summary.averageGlucose").value(130))
+            // 측정 3건뿐이라 커버리지 70% 미만 → 평균/점수 미산출
+            .andExpect(jsonPath("$.result.summary.averageGlucose").doesNotExist())
+            .andExpect(jsonPath("$.result.summary.glucoseScoreStatus").value("UNAVAILABLE"))
+            .andExpect(jsonPath("$.result.summary.spikeCount").value(0))
             .andExpect(jsonPath("$.result.summary.carbohydrateG").value(69.0))
             .andExpect(jsonPath("$.result.meals.length()").value(1))
             .andExpect(jsonPath("$.result.meals[0].representativeFoodName").value("흑미밥"));
+    }
+
+    @Test
+    void 하루치_데이터가_있으면_확정_점수를_오늘은_잠정_점수를_계산한다() throws Exception {
+        Member member = onboardedMember();
+        CgmConnection connection = connect(member);
+        OffsetDateTime dayStart = OffsetDateTime.parse("2026-09-28T00:00:00+09:00");
+        long seq = 1;
+        // 9/28 하루 종일 5분 간격 110, 12:00~13:00에 급상승 스파이크(최대 200, 20분 유지)
+        // 평균 = 110 + 추가면적 3375 / 측정 1435분 = 112.35 → 112
+        for (int minute = 0; minute < 1440; minute += 5) {
+            int t = minute - 720;
+            double value = t < 0 || t > 50 ? 110 : (t <= 30 ? 110 + t * 3.0 : 200);
+            reading(connection, seq++, dayStart.plusMinutes(minute).toString(), value);
+        }
+        // 9/29 00:00~10:00(현재) 5분 간격 110
+        for (int minute = 0; minute < 600; minute += 5) {
+            reading(connection, seq++, dayStart.plusDays(1).plusMinutes(minute).toString(), 110);
+        }
+
+        mockMvc.perform(get("/api/home").param("date", "2026-09-28").header("Authorization", bearer(member)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.result.summary.glucoseScoreStatus").value("FINAL"))
+            .andExpect(jsonPath("$.result.summary.spikeCount").value(1))
+            .andExpect(jsonPath("$.result.summary.glucoseScoreDeductions.spike").value(3.0))
+            .andExpect(jsonPath("$.result.summary.glucoseScore").value(97))
+            .andExpect(jsonPath("$.result.summary.averageGlucose").value(112));
+
+        mockMvc.perform(get("/api/home").header("Authorization", bearer(member)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.result.date").value("2026-09-29"))
+            .andExpect(jsonPath("$.result.summary.glucoseScoreStatus").value("PROVISIONAL"))
+            .andExpect(jsonPath("$.result.summary.glucoseScore").value(100))
+            .andExpect(jsonPath("$.result.summary.averageGlucose").value(110));
+
+        mockMvc.perform(get("/api/home").param("date", "2026-09-30").header("Authorization", bearer(member)))
+            .andExpect(jsonPath("$.result.summary.glucoseScoreStatus").value("UNAVAILABLE"))
+            .andExpect(jsonPath("$.result.summary.spikeCount").doesNotExist());
     }
 
     @Test
@@ -102,7 +160,8 @@ class HomeIntegrationTest extends IntegrationTest {
 
         mockMvc.perform(get("/api/home").header("Authorization", bearer(member)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.result.date").isNotEmpty());
+            .andExpect(jsonPath("$.result.date").value("2026-09-29"))
+            .andExpect(jsonPath("$.result.summary.glucoseScoreStatus").value("UNAVAILABLE"));
     }
 
     private Member onboardedMember() {
