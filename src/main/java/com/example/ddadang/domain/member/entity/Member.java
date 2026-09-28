@@ -93,6 +93,16 @@ public class Member extends BaseTimeEntity {
         return member;
     }
 
+    public void completeOnboarding(
+        DiabetesType diabetesType, BigDecimal heightCm, Integer targetGlucoseMin, Integer targetGlucoseMax
+    ) {
+        this.diabetesType = diabetesType;
+        this.heightCm = heightCm;
+        this.targetGlucoseMin = targetGlucoseMin;
+        this.targetGlucoseMax = targetGlucoseMax;
+        this.onboardingCompleted = true;
+    }
+
     public void completeSignup(boolean marketingAgreed) {
         this.signupCompleted = true;
         this.marketingAgreed = marketingAgreed;
