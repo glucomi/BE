@@ -1,0 +1,293 @@
+-- DDADANG ERD v0.1 (MySQL)
+-- ERDCloud: 우측 상단 Import > MySQL 선택 후 이 파일 내용 붙여넣기
+
+CREATE TABLE `member` (
+    `id`                    BIGINT       NOT NULL AUTO_INCREMENT COMMENT '회원 ID',
+    `provider`              VARCHAR(20)  NOT NULL COMMENT '소셜 제공자(KAKAO)',
+    `provider_id`           VARCHAR(100) NOT NULL COMMENT '소셜 회원 식별자',
+    `name`                  VARCHAR(50)  NULL COMMENT '이름',
+    `birth_date`            DATE         NULL COMMENT '생년월일',
+    `gender`                VARCHAR(10)  NULL COMMENT '성별(MALE/FEMALE)',
+    `height_cm`             DECIMAL(5,1) NULL COMMENT '키(cm)',
+    `diabetes_type`         VARCHAR(30)  NULL COMMENT '당뇨 유형(TYPE1/TYPE2_INSULIN/TYPE2_NO_INSULIN/PRE/GESTATIONAL/NONE)',
+    `target_glucose_min`    INT          NULL COMMENT '목표 혈당 하한(mg/dL)',
+    `target_glucose_max`    INT          NULL COMMENT '목표 혈당 상한(mg/dL)',
+    `onboarding_completed`  BOOLEAN      NOT NULL DEFAULT FALSE COMMENT '큐레이션 온보딩 완료 여부',
+    `push_glucose_enabled`  BOOLEAN      NOT NULL DEFAULT TRUE COMMENT '혈당 관련 푸시 수신 여부',
+    `marketing_agreed`      BOOLEAN      NOT NULL DEFAULT FALSE COMMENT '마케팅 수신 동의 여부',
+    `status`                VARCHAR(20)  NOT NULL DEFAULT 'ACTIVE' COMMENT '회원 상태(ACTIVE/WITHDRAWN)',
+    `deleted_at`            DATETIME     NULL COMMENT '탈퇴 일시',
+    `created_at`            DATETIME     NOT NULL COMMENT '생성 일시',
+    `updated_at`            DATETIME     NOT NULL COMMENT '수정 일시',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_member_provider` (`provider`, `provider_id`)
+) COMMENT '회원';
+
+CREATE TABLE `member_agreement` (
+    `id`             BIGINT      NOT NULL AUTO_INCREMENT COMMENT '약관 동의 ID',
+    `member_id`      BIGINT      NOT NULL COMMENT '회원 ID',
+    `terms_type`     VARCHAR(30) NOT NULL COMMENT '약관 종류(SERVICE/PRIVACY/...)',
+    `terms_version`  VARCHAR(20) NOT NULL COMMENT '약관 버전',
+    `agreed`         BOOLEAN     NOT NULL COMMENT '동의 여부',
+    `agreed_at`      DATETIME    NOT NULL COMMENT '동의 일시',
+    `created_at`     DATETIME    NOT NULL COMMENT '생성 일시',
+    `updated_at`     DATETIME    NOT NULL COMMENT '수정 일시',
+    PRIMARY KEY (`id`)
+) COMMENT '약관 동의';
+
+CREATE TABLE `member_withdrawal` (
+    `id`          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '탈퇴 ID',
+    `member_id`   BIGINT       NOT NULL COMMENT '회원 ID',
+    `reason`      VARCHAR(50)  NOT NULL COMMENT '탈퇴 사유',
+    `detail`      VARCHAR(500) NULL COMMENT '상세 사유',
+    `created_at`  DATETIME     NOT NULL COMMENT '생성 일시',
+    `updated_at`  DATETIME     NOT NULL COMMENT '수정 일시',
+    PRIMARY KEY (`id`)
+) COMMENT '회원 탈퇴';
+
+CREATE TABLE `cgm_connection` (
+    `id`                 BIGINT        NOT NULL AUTO_INCREMENT COMMENT 'CGM 연결 ID',
+    `member_id`          BIGINT        NOT NULL COMMENT '회원 ID',
+    `provider`           VARCHAR(20)   NOT NULL COMMENT 'CGM 제공사(CARESENS_AIR/LIBRE)',
+    `external_user_id`   VARCHAR(100)  NOT NULL COMMENT '제공사 회원 식별자',
+    `access_token`       VARCHAR(2000) NULL COMMENT '액세스 토큰',
+    `refresh_token`      VARCHAR(2000) NULL COMMENT '리프레시 토큰',
+    `token_expires_at`   DATETIME      NULL COMMENT '토큰 만료 일시',
+    `sensor_serial`      VARCHAR(100)  NULL COMMENT '센서 시리얼 번호',
+    `sensor_started_at`  DATETIME      NULL COMMENT '센서 부착 일시(N일차 계산)',
+    `status`             VARCHAR(20)   NOT NULL COMMENT '연결 상태(CONNECTED/DISCONNECTED)',
+    `created_at`         DATETIME      NOT NULL COMMENT '생성 일시',
+    `updated_at`         DATETIME      NOT NULL COMMENT '수정 일시',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_cgm_connection_provider_user` (`provider`, `external_user_id`)
+) COMMENT 'CGM 연결';
+
+CREATE TABLE `cgm_reading` (
+    `id`                 BIGINT       NOT NULL AUTO_INCREMENT COMMENT 'CGM 혈당 ID',
+    `member_id`          BIGINT       NOT NULL COMMENT '회원 ID',
+    `cgm_connection_id`  BIGINT       NOT NULL COMMENT 'CGM 연결 ID',
+    `serial_number`      VARCHAR(100) NOT NULL COMMENT '센서 시리얼 번호',
+    `seq_number`         BIGINT       NOT NULL COMMENT '측정 순번',
+    `measured_at`        DATETIME     NOT NULL COMMENT '측정 일시',
+    `tz_offset`          INT          NULL COMMENT '타임존 오프셋',
+    `stage`              INT          NULL COMMENT '스무딩 단계(1=진행중, 2=확정)',
+    `initial_value`      DOUBLE       NULL COMMENT '최초 측정값',
+    `value`              DOUBLE       NULL COMMENT '혈당값(mg/dL)',
+    `trend_rate`         DOUBLE       NULL COMMENT '변화율',
+    `trend`              INT          NULL COMMENT '추세(0~7)',
+    `error_code`         INT          NULL COMMENT '에러 코드',
+    `min_max_flag`       INT          NULL COMMENT '측정 범위 플래그(0=정상, 1=40미만, 2=500초과)',
+    `created_at`         DATETIME     NOT NULL COMMENT '생성 일시',
+    `updated_at`         DATETIME     NOT NULL COMMENT '수정 일시',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_cgm_reading_conn_serial_seq` (`cgm_connection_id`, `serial_number`, `seq_number`)
+) COMMENT 'CGM 혈당';
+
+CREATE TABLE `food` (
+    `id`              BIGINT        NOT NULL AUTO_INCREMENT COMMENT '음식 ID',
+    `source`          VARCHAR(20)   NOT NULL COMMENT '출처(DB/CUSTOM)',
+    `member_id`       BIGINT        NULL COMMENT '등록 회원 ID(CUSTOM일 때)',
+    `name`            VARCHAR(100)  NOT NULL COMMENT '음식명',
+    `brand`           VARCHAR(100)  NULL COMMENT '브랜드명',
+    `category`        VARCHAR(30)   NULL COMMENT '분류(일반식품/가공품)',
+    `serving_amount`  DECIMAL(8,2)  NOT NULL COMMENT '기준 제공량',
+    `serving_unit`    VARCHAR(10)   NOT NULL COMMENT '제공량 단위(g/ml/개)',
+    `kcal`            DECIMAL(8,2)  NULL COMMENT '열량(kcal)',
+    `carbohydrate_g`  DECIMAL(8,2)  NULL COMMENT '탄수화물(g)',
+    `protein_g`       DECIMAL(8,2)  NULL COMMENT '단백질(g)',
+    `fat_g`           DECIMAL(8,2)  NULL COMMENT '지방(g)',
+    `glucose_grade`   VARCHAR(5)    NULL COMMENT '혈당 등급(A+/A/B+/B/F)',
+    `created_at`      DATETIME      NOT NULL COMMENT '생성 일시',
+    `updated_at`      DATETIME      NOT NULL COMMENT '수정 일시',
+    PRIMARY KEY (`id`)
+) COMMENT '음식';
+
+CREATE TABLE `favorite_food` (
+    `id`          BIGINT   NOT NULL AUTO_INCREMENT COMMENT '즐겨찾기 ID',
+    `member_id`   BIGINT   NOT NULL COMMENT '회원 ID',
+    `food_id`     BIGINT   NOT NULL COMMENT '음식 ID',
+    `created_at`  DATETIME NOT NULL COMMENT '생성 일시',
+    `updated_at`  DATETIME NOT NULL COMMENT '수정 일시',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_favorite_food_member_food` (`member_id`, `food_id`)
+) COMMENT '음식 즐겨찾기';
+
+CREATE TABLE `meal_record` (
+    `id`          BIGINT        NOT NULL AUTO_INCREMENT COMMENT '식사 기록 ID',
+    `member_id`   BIGINT        NOT NULL COMMENT '회원 ID',
+    `eaten_at`    DATETIME      NOT NULL COMMENT '식사 일시',
+    `memo`        VARCHAR(1000) NULL COMMENT '메모',
+    `created_at`  DATETIME      NOT NULL COMMENT '생성 일시',
+    `updated_at`  DATETIME      NOT NULL COMMENT '수정 일시',
+    PRIMARY KEY (`id`)
+) COMMENT '식사 기록';
+
+CREATE TABLE `meal_record_item` (
+    `id`              BIGINT       NOT NULL AUTO_INCREMENT COMMENT '식사 메뉴 ID',
+    `meal_record_id`  BIGINT       NOT NULL COMMENT '식사 기록 ID',
+    `food_id`         BIGINT       NOT NULL COMMENT '음식 ID',
+    `amount`          DECIMAL(8,2) NOT NULL COMMENT '섭취량',
+    `unit`            VARCHAR(10)  NOT NULL COMMENT '섭취 단위',
+    `kcal`            DECIMAL(8,2) NULL COMMENT '열량 스냅샷(kcal)',
+    `carbohydrate_g`  DECIMAL(8,2) NULL COMMENT '탄수화물 스냅샷(g)',
+    `protein_g`       DECIMAL(8,2) NULL COMMENT '단백질 스냅샷(g)',
+    `fat_g`           DECIMAL(8,2) NULL COMMENT '지방 스냅샷(g)',
+    `created_at`      DATETIME     NOT NULL COMMENT '생성 일시',
+    `updated_at`      DATETIME     NOT NULL COMMENT '수정 일시',
+    PRIMARY KEY (`id`)
+) COMMENT '식사 메뉴';
+
+CREATE TABLE `meal_record_photo` (
+    `id`              BIGINT       NOT NULL AUTO_INCREMENT COMMENT '식사 사진 ID',
+    `meal_record_id`  BIGINT       NOT NULL COMMENT '식사 기록 ID',
+    `image_url`       VARCHAR(500) NOT NULL COMMENT '이미지 URL',
+    `sort_order`      INT          NOT NULL COMMENT '정렬 순서(최대 10장)',
+    `created_at`      DATETIME     NOT NULL COMMENT '생성 일시',
+    `updated_at`      DATETIME     NOT NULL COMMENT '수정 일시',
+    PRIMARY KEY (`id`)
+) COMMENT '식사 사진';
+
+CREATE TABLE `glucose_record` (
+    `id`           BIGINT        NOT NULL AUTO_INCREMENT COMMENT '혈당 기록 ID',
+    `member_id`    BIGINT        NOT NULL COMMENT '회원 ID',
+    `measured_at`  DATETIME      NOT NULL COMMENT '측정 일시',
+    `value_mg_dl`  INT           NOT NULL COMMENT '혈당값(mg/dL)',
+    `memo`         VARCHAR(1000) NULL COMMENT '메모',
+    `created_at`   DATETIME      NOT NULL COMMENT '생성 일시',
+    `updated_at`   DATETIME      NOT NULL COMMENT '수정 일시',
+    PRIMARY KEY (`id`)
+) COMMENT '혈당 수기 기록';
+
+CREATE TABLE `weight_record` (
+    `id`           BIGINT       NOT NULL AUTO_INCREMENT COMMENT '체중 기록 ID',
+    `member_id`    BIGINT       NOT NULL COMMENT '회원 ID',
+    `measured_at`  DATETIME     NOT NULL COMMENT '측정 일시',
+    `weight_kg`    DECIMAL(5,1) NOT NULL COMMENT '체중(kg)',
+    `created_at`   DATETIME     NOT NULL COMMENT '생성 일시',
+    `updated_at`   DATETIME     NOT NULL COMMENT '수정 일시',
+    PRIMARY KEY (`id`)
+) COMMENT '체중 기록';
+
+CREATE TABLE `memo_record` (
+    `id`           BIGINT        NOT NULL AUTO_INCREMENT COMMENT '메모 기록 ID',
+    `member_id`    BIGINT        NOT NULL COMMENT '회원 ID',
+    `recorded_at`  DATETIME      NOT NULL COMMENT '기록 일시',
+    `content`      VARCHAR(1000) NOT NULL COMMENT '내용',
+    `created_at`   DATETIME      NOT NULL COMMENT '생성 일시',
+    `updated_at`   DATETIME      NOT NULL COMMENT '수정 일시',
+    PRIMARY KEY (`id`)
+) COMMENT '메모 기록';
+
+CREATE TABLE `memo_record_photo` (
+    `id`              BIGINT       NOT NULL AUTO_INCREMENT COMMENT '메모 사진 ID',
+    `memo_record_id`  BIGINT       NOT NULL COMMENT '메모 기록 ID',
+    `image_url`       VARCHAR(500) NOT NULL COMMENT '이미지 URL',
+    `sort_order`      INT          NOT NULL COMMENT '정렬 순서',
+    `created_at`      DATETIME     NOT NULL COMMENT '생성 일시',
+    `updated_at`      DATETIME     NOT NULL COMMENT '수정 일시',
+    PRIMARY KEY (`id`)
+) COMMENT '메모 사진';
+
+CREATE TABLE `insulin_product` (
+    `id`           BIGINT       NOT NULL AUTO_INCREMENT COMMENT '인슐린 제품 ID',
+    `name`         VARCHAR(100) NOT NULL COMMENT '제품명',
+    `action_type`  VARCHAR(20)  NOT NULL COMMENT '작용 유형(RAPID/SHORT/INTERMEDIATE/LONG/MIXED)',
+    `created_at`   DATETIME     NOT NULL COMMENT '생성 일시',
+    `updated_at`   DATETIME     NOT NULL COMMENT '수정 일시',
+    PRIMARY KEY (`id`)
+) COMMENT '인슐린 제품';
+
+CREATE TABLE `member_insulin` (
+    `id`                  BIGINT       NOT NULL AUTO_INCREMENT COMMENT '내 인슐린 ID',
+    `member_id`           BIGINT       NOT NULL COMMENT '회원 ID',
+    `insulin_product_id`  BIGINT       NOT NULL COMMENT '인슐린 제품 ID',
+    `default_dose_unit`   DECIMAL(5,1) NOT NULL COMMENT '기본 투여량(U)',
+    `deleted_at`          DATETIME     NULL COMMENT '삭제 일시',
+    `created_at`          DATETIME     NOT NULL COMMENT '생성 일시',
+    `updated_at`          DATETIME     NOT NULL COMMENT '수정 일시',
+    PRIMARY KEY (`id`)
+) COMMENT '내 인슐린';
+
+CREATE TABLE `insulin_record` (
+    `id`                 BIGINT        NOT NULL AUTO_INCREMENT COMMENT '인슐린 기록 ID',
+    `member_id`          BIGINT        NOT NULL COMMENT '회원 ID',
+    `member_insulin_id`  BIGINT        NOT NULL COMMENT '내 인슐린 ID',
+    `injected_at`        DATETIME      NOT NULL COMMENT '투여 일시',
+    `dose_unit`          DECIMAL(5,1)  NOT NULL COMMENT '투여량(U)',
+    `memo`               VARCHAR(1000) NULL COMMENT '메모',
+    `created_at`         DATETIME      NOT NULL COMMENT '생성 일시',
+    `updated_at`         DATETIME      NOT NULL COMMENT '수정 일시',
+    PRIMARY KEY (`id`)
+) COMMENT '인슐린 기록';
+
+CREATE TABLE `member_medication` (
+    `id`            BIGINT       NOT NULL AUTO_INCREMENT COMMENT '내 복용약 ID',
+    `member_id`     BIGINT       NOT NULL COMMENT '회원 ID',
+    `category`      VARCHAR(30)  NOT NULL COMMENT '약 종류(DIABETES/HYPERLIPIDEMIA/HYPERTENSION/SUPPLEMENT/ETC)',
+    `product_name`  VARCHAR(100) NULL COMMENT '제품명(선택)',
+    `deleted_at`    DATETIME     NULL COMMENT '삭제 일시',
+    `created_at`    DATETIME     NOT NULL COMMENT '생성 일시',
+    `updated_at`    DATETIME     NOT NULL COMMENT '수정 일시',
+    PRIMARY KEY (`id`)
+) COMMENT '내 복용약';
+
+CREATE TABLE `medication_record` (
+    `id`                    BIGINT        NOT NULL AUTO_INCREMENT COMMENT '복약 기록 ID',
+    `member_id`             BIGINT        NOT NULL COMMENT '회원 ID',
+    `member_medication_id`  BIGINT        NOT NULL COMMENT '내 복용약 ID',
+    `taken_at`              DATETIME      NOT NULL COMMENT '복용 일시',
+    `memo`                  VARCHAR(1000) NULL COMMENT '메모',
+    `created_at`            DATETIME      NOT NULL COMMENT '생성 일시',
+    `updated_at`            DATETIME      NOT NULL COMMENT '수정 일시',
+    PRIMARY KEY (`id`)
+) COMMENT '복약 기록';
+
+CREATE TABLE `exercise` (
+    `id`          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '운동 ID',
+    `name`        VARCHAR(100) NOT NULL COMMENT '운동명',
+    `met`         DECIMAL(4,1) NOT NULL COMMENT 'MET(kcal 계산용)',
+    `popular`     BOOLEAN      NOT NULL DEFAULT FALSE COMMENT '인기 운동 여부',
+    `created_at`  DATETIME     NOT NULL COMMENT '생성 일시',
+    `updated_at`  DATETIME     NOT NULL COMMENT '수정 일시',
+    PRIMARY KEY (`id`)
+) COMMENT '운동';
+
+CREATE TABLE `exercise_record` (
+    `id`            BIGINT        NOT NULL AUTO_INCREMENT COMMENT '운동 기록 ID',
+    `member_id`     BIGINT        NOT NULL COMMENT '회원 ID',
+    `exercise_id`   BIGINT        NOT NULL COMMENT '운동 ID',
+    `performed_at`  DATETIME      NOT NULL COMMENT '운동 일시',
+    `duration_min`  INT           NOT NULL COMMENT '운동 시간(분)',
+    `kcal`          DECIMAL(8,2)  NULL COMMENT '소모 열량(kcal)',
+    `memo`          VARCHAR(1000) NULL COMMENT '메모',
+    `created_at`    DATETIME      NOT NULL COMMENT '생성 일시',
+    `updated_at`    DATETIME      NOT NULL COMMENT '수정 일시',
+    PRIMARY KEY (`id`)
+) COMMENT '운동 기록';
+
+-- Foreign Keys
+ALTER TABLE `member_agreement`   ADD CONSTRAINT `fk_member_agreement_member`   FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
+ALTER TABLE `member_withdrawal`  ADD CONSTRAINT `fk_member_withdrawal_member`  FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
+ALTER TABLE `cgm_connection`     ADD CONSTRAINT `fk_cgm_connection_member`     FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
+ALTER TABLE `cgm_reading`        ADD CONSTRAINT `fk_cgm_reading_member`        FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
+ALTER TABLE `cgm_reading`        ADD CONSTRAINT `fk_cgm_reading_connection`    FOREIGN KEY (`cgm_connection_id`) REFERENCES `cgm_connection` (`id`);
+ALTER TABLE `food`               ADD CONSTRAINT `fk_food_member`               FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
+ALTER TABLE `favorite_food`      ADD CONSTRAINT `fk_favorite_food_member`      FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
+ALTER TABLE `favorite_food`      ADD CONSTRAINT `fk_favorite_food_food`        FOREIGN KEY (`food_id`) REFERENCES `food` (`id`);
+ALTER TABLE `meal_record`        ADD CONSTRAINT `fk_meal_record_member`        FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
+ALTER TABLE `meal_record_item`   ADD CONSTRAINT `fk_meal_record_item_record`   FOREIGN KEY (`meal_record_id`) REFERENCES `meal_record` (`id`);
+ALTER TABLE `meal_record_item`   ADD CONSTRAINT `fk_meal_record_item_food`     FOREIGN KEY (`food_id`) REFERENCES `food` (`id`);
+ALTER TABLE `meal_record_photo`  ADD CONSTRAINT `fk_meal_record_photo_record`  FOREIGN KEY (`meal_record_id`) REFERENCES `meal_record` (`id`);
+ALTER TABLE `glucose_record`     ADD CONSTRAINT `fk_glucose_record_member`     FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
+ALTER TABLE `weight_record`      ADD CONSTRAINT `fk_weight_record_member`      FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
+ALTER TABLE `memo_record`        ADD CONSTRAINT `fk_memo_record_member`        FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
+ALTER TABLE `memo_record_photo`  ADD CONSTRAINT `fk_memo_record_photo_record`  FOREIGN KEY (`memo_record_id`) REFERENCES `memo_record` (`id`);
+ALTER TABLE `member_insulin`     ADD CONSTRAINT `fk_member_insulin_member`     FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
+ALTER TABLE `member_insulin`     ADD CONSTRAINT `fk_member_insulin_product`    FOREIGN KEY (`insulin_product_id`) REFERENCES `insulin_product` (`id`);
+ALTER TABLE `insulin_record`     ADD CONSTRAINT `fk_insulin_record_member`     FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
+ALTER TABLE `insulin_record`     ADD CONSTRAINT `fk_insulin_record_my_insulin` FOREIGN KEY (`member_insulin_id`) REFERENCES `member_insulin` (`id`);
+ALTER TABLE `member_medication`  ADD CONSTRAINT `fk_member_medication_member`  FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
+ALTER TABLE `medication_record`  ADD CONSTRAINT `fk_medication_record_member`  FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
+ALTER TABLE `medication_record`  ADD CONSTRAINT `fk_medication_record_my_drug` FOREIGN KEY (`member_medication_id`) REFERENCES `member_medication` (`id`);
+ALTER TABLE `exercise_record`    ADD CONSTRAINT `fk_exercise_record_member`    FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
+ALTER TABLE `exercise_record`    ADD CONSTRAINT `fk_exercise_record_exercise`  FOREIGN KEY (`exercise_id`) REFERENCES `exercise` (`id`);
