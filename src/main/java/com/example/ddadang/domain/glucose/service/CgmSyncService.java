@@ -2,12 +2,13 @@ package com.example.ddadang.domain.glucose.service;
 
 import com.example.ddadang.domain.glucose.dto.response.CgmSampleResponse;
 import com.example.ddadang.domain.glucose.dto.response.CgmSyncResultResponse;
+import com.example.ddadang.domain.glucose.entity.CgmConnection;
 import com.example.ddadang.domain.glucose.entity.CgmReading;
 import com.example.ddadang.domain.glucose.repository.CgmReadingRepository;
 import com.example.ddadang.domain.glucose.util.CgmDateRangeSplitter;
-import com.example.ddadang.domain.glucose.util.CgmDateRangeSplitter.Range;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -33,8 +34,9 @@ public class CgmSyncService {
     private final CgmReadingRepository cgmReadingRepository;
 
     @Transactional
-    public CgmSyncResultResponse syncCgmData(String isensUserId, OffsetDateTime start, OffsetDateTime end) {
-        String accessToken = isensAuthService.getValidAccessToken(isensUserId);
+    public CgmSyncResultResponse syncCgmData(Long memberId, OffsetDateTime start, OffsetDateTime end) {
+        String accessToken = isensAuthService.getValidAccessToken(memberId);
+        CgmConnection connection = isensAuthService.getConnection(memberId);
 
         List<CgmSampleResponse> fetched = CgmDateRangeSplitter.split(start, end).stream()
             .map(range -> isensCgmApiClient.fetchCgmData(accessToken, range.start(), range.end()))
@@ -44,10 +46,11 @@ public class CgmSyncService {
         int insertedCount = 0;
         int updatedCount = 0;
         for (var group : groupBySerial(fetched).entrySet()) {
-            UpsertResult result = upsertReadings(isensUserId, group.getKey(), group.getValue());
+            UpsertResult result = upsertReadings(connection, group.getKey(), group.getValue());
             insertedCount += result.inserted();
             updatedCount += result.updated();
         }
+        updateLatestSensor(connection, fetched);
 
         return new CgmSyncResultResponse(fetched.size(), insertedCount, updatedCount);
     }
@@ -56,10 +59,10 @@ public class CgmSyncService {
         return samples.stream().collect(Collectors.groupingBy(CgmSampleResponse::serialNumber));
     }
 
-    private UpsertResult upsertReadings(String isensUserId, String serialNumber, List<CgmSampleResponse> samples) {
+    private UpsertResult upsertReadings(CgmConnection connection, String serialNumber, List<CgmSampleResponse> samples) {
         List<Long> seqNumbers = samples.stream().map(CgmSampleResponse::seqNumber).toList();
         Map<Long, CgmReading> existingBySeqNumber = cgmReadingRepository
-            .findByIsensUserIdAndSerialNumberAndSeqNumberIn(isensUserId, serialNumber, seqNumbers)
+            .findByCgmConnectionIdAndSerialNumberAndSeqNumberIn(connection.getId(), serialNumber, seqNumbers)
             .stream()
             .collect(Collectors.toMap(CgmReading::getSeqNumber, Function.identity()));
 
@@ -68,7 +71,7 @@ public class CgmSyncService {
         for (CgmSampleResponse sample : samples) {
             CgmReading existing = existingBySeqNumber.get(sample.seqNumber());
             if (existing == null) {
-                newReadings.add(CgmReading.of(isensUserId, sample));
+                newReadings.add(CgmReading.of(connection, sample));
             } else if (!existing.isFinalized()) {
                 existing.updateFrom(sample);
                 updatedCount++;
@@ -77,6 +80,17 @@ public class CgmSyncService {
 
         cgmReadingRepository.saveAll(newReadings);
         return new UpsertResult(newReadings.size(), updatedCount);
+    }
+
+    private void updateLatestSensor(CgmConnection connection, List<CgmSampleResponse> fetched) {
+        fetched.stream()
+            .max(Comparator.comparing(CgmSampleResponse::eventAt))
+            .map(CgmSampleResponse::serialNumber)
+            .ifPresent(latestSerial -> fetched.stream()
+                .filter(sample -> sample.serialNumber().equals(latestSerial))
+                .map(CgmSampleResponse::eventAt)
+                .min(Comparator.naturalOrder())
+                .ifPresent(firstMeasuredAt -> connection.updateSensor(latestSerial, firstMeasuredAt)));
     }
 
     private record UpsertResult(int inserted, int updated) {

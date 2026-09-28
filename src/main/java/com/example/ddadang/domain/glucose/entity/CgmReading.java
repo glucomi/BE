@@ -1,14 +1,19 @@
 package com.example.ddadang.domain.glucose.entity;
 
 import com.example.ddadang.domain.glucose.dto.response.CgmSampleResponse;
+import com.example.ddadang.domain.member.entity.Member;
+import com.example.ddadang.global.entity.BaseTimeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -30,20 +35,26 @@ import lombok.NoArgsConstructor;
 @Table(
     name = "cgm_reading",
     uniqueConstraints = @UniqueConstraint(
-        name = "uk_cgm_reading_user_serial_seq",
-        columnNames = {"isens_user_id", "serial_number", "seq_number"}
-    )
+        name = "uk_cgm_reading_conn_serial_seq",
+        columnNames = {"cgm_connection_id", "serial_number", "seq_number"}
+    ),
+    indexes = @Index(name = "idx_cgm_reading_member_event_at", columnList = "member_id, event_at")
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class CgmReading {
+public class CgmReading extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "isens_user_id", nullable = false, length = 100)
-    private String isensUserId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cgm_connection_id", nullable = false)
+    private CgmConnection cgmConnection;
 
     @Column(name = "serial_number", nullable = false, length = 100)
     private String serialNumber;
@@ -78,20 +89,12 @@ public class CgmReading {
     @Column(name = "min_max_flag")
     private Integer minMaxFlag;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
-
-    public static CgmReading of(String isensUserId, CgmSampleResponse sample) {
+    public static CgmReading of(CgmConnection connection, CgmSampleResponse sample) {
         CgmReading reading = new CgmReading();
-        reading.isensUserId = isensUserId;
+        reading.member = connection.getMember();
+        reading.cgmConnection = connection;
         reading.serialNumber = sample.serialNumber();
         reading.seqNumber = sample.seqNumber();
-        LocalDateTime now = LocalDateTime.now();
-        reading.createdAt = now;
-        reading.updatedAt = now;
         reading.applyValues(sample);
         return reading;
     }
@@ -102,7 +105,6 @@ public class CgmReading {
      */
     public void updateFrom(CgmSampleResponse sample) {
         applyValues(sample);
-        this.updatedAt = LocalDateTime.now();
     }
 
     public boolean isFinalized() {

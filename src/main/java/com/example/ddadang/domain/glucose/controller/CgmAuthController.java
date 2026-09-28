@@ -1,62 +1,53 @@
 package com.example.ddadang.domain.glucose.controller;
 
-import com.example.ddadang.domain.glucose.entity.CgmToken;
-import com.example.ddadang.domain.glucose.exception.InvalidOAuthStateException;
+import com.example.ddadang.domain.glucose.entity.CgmConnection;
+import com.example.ddadang.domain.glucose.enums.CgmProvider;
 import com.example.ddadang.domain.glucose.service.IsensAuthService;
 import com.example.ddadang.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "CGM 인증", description = "아이센스 OAuth 2.0 인증 플로우 (로그인 리다이렉트 / 콜백)")
+@Tag(name = "CGM 인증", description = "아이센스 OAuth 2.0 연결 (인가 URL 발급 / 콜백)")
 @RestController
 @RequiredArgsConstructor
 public class CgmAuthController {
 
-    private static final String STATE_SESSION_KEY = "isens_oauth_state";
-
     private final IsensAuthService isensAuthService;
 
     @Operation(
-        summary = "아이센스 로그인으로 리다이렉트",
-        description = "브라우저 주소창에서 직접 열어야 함(Swagger 'Try it out'은 리다이렉트를 못 따라감). "
-            + "state를 세션에 저장해두고 콜백에서 CSRF 검증에 사용한다."
+        summary = "아이센스 인가 URL 발급",
+        description = "로그인 회원 기준으로 아이센스 로그인 URL을 발급한다. 앱은 이 URL을 브라우저(웹뷰)로 열고, "
+            + "로그인이 끝나면 콜백으로 리다이렉트된다. state에 회원 정보가 서명되어 있어 10분 안에 완료해야 한다."
     )
-    @GetMapping("/api/cgm/oauth/authorize")
-    public void authorize(HttpSession session, HttpServletResponse response) throws IOException {
-        String state = isensAuthService.generateState();
-        session.setAttribute(STATE_SESSION_KEY, state);
-        response.sendRedirect(isensAuthService.buildAuthorizeUrl(state));
+    @GetMapping("/api/cgm/oauth/authorize-url")
+    public ResponseEntity<ApiResponse<AuthorizeUrlResponse>> getAuthorizeUrl(@AuthenticationPrincipal Long memberId) {
+        return ApiResponse.success(new AuthorizeUrlResponse(isensAuthService.buildAuthorizeUrl(memberId)));
     }
 
     @Operation(
-        summary = "인가 코드 콜백 처리 (토큰 교환)",
-        description = "아이센스 로그인 성공 후 리다이렉트되는 콜백. state를 검증하고 인가 코드를 "
-            + "access token / refresh token으로 교환해 저장한 뒤 isensUserId를 반환한다."
+        summary = "인가 코드 콜백 처리 (CGM 연결)",
+        description = "아이센스 로그인 성공 후 리다이렉트되는 콜백(인증 헤더 없이 호출됨). state로 회원을 확인하고 "
+            + "인가 코드를 토큰으로 교환해 회원의 CGM 연결을 저장한다. 이미 다른 회원에게 연결된 계정이면 409."
     )
     @GetMapping("/api/cgm/oauth/callback")
-    public ResponseEntity<ApiResponse<CgmOAuthCallbackResult>> callback(
+    public ResponseEntity<ApiResponse<CgmConnectResult>> callback(
         @RequestParam String code,
-        @RequestParam String state,
-        HttpSession session
+        @RequestParam String state
     ) {
-        Object savedState = session.getAttribute(STATE_SESSION_KEY);
-        if (savedState == null || !savedState.equals(state)) {
-            throw new InvalidOAuthStateException();
-        }
-        session.removeAttribute(STATE_SESSION_KEY);
-
-        CgmToken token = isensAuthService.exchangeCodeForToken(code);
-        return ApiResponse.success(new CgmOAuthCallbackResult(token.getIsensUserId()));
+        Long memberId = isensAuthService.resolveMemberIdFromState(state);
+        CgmConnection connection = isensAuthService.connect(memberId, code);
+        return ApiResponse.success(new CgmConnectResult(connection.getProvider(), true));
     }
 
-    public record CgmOAuthCallbackResult(String isensUserId) {
+    public record AuthorizeUrlResponse(String authorizeUrl) {
+    }
+
+    public record CgmConnectResult(CgmProvider provider, boolean connected) {
     }
 }
