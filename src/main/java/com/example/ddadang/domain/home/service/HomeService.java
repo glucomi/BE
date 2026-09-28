@@ -3,7 +3,7 @@ package com.example.ddadang.domain.home.service;
 import com.example.ddadang.domain.glucose.entity.CgmConnection;
 import com.example.ddadang.domain.glucose.entity.CgmReading;
 import com.example.ddadang.domain.glucose.score.DailyGlucoseAnalysis;
-import com.example.ddadang.domain.glucose.service.GlucoseAnalysisService;
+import com.example.ddadang.domain.glucose.service.DailyGlucoseScoreService;
 import com.example.ddadang.domain.glucose.service.GlucoseQueryService;
 import com.example.ddadang.domain.home.dto.HomeResponse;
 import com.example.ddadang.domain.home.dto.HomeResponse.Deductions;
@@ -40,7 +40,7 @@ public class HomeService {
 
     private final MemberService memberService;
     private final GlucoseQueryService glucoseQueryService;
-    private final GlucoseAnalysisService glucoseAnalysisService;
+    private final DailyGlucoseScoreService dailyGlucoseScoreService;
     private final MealRecordService mealRecordService;
     private final Clock clock;
 
@@ -58,8 +58,8 @@ public class HomeService {
             memberId, from.toLocalDateTime(), to.toLocalDateTime()
         );
 
-        DailyGlucoseAnalysis analysis = glucoseAnalysisService.analyze(
-            member.diabetesType(), readings, date, KST, OffsetDateTime.now(clock)
+        DailyGlucoseAnalysis analysis = dailyGlucoseScoreService.getDailyAnalysis(
+            memberId, member.diabetesType(), date, readings
         );
 
         IntSummaryStatistics stats = readings.stream()

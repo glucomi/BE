@@ -96,6 +96,27 @@ CREATE TABLE `cgm_reading` (
     KEY `idx_cgm_reading_member_event_at` (`member_id`, `event_at`)
 ) COMMENT 'CGM 혈당';
 
+CREATE TABLE `daily_glucose_score` (
+    `id`               BIGINT      NOT NULL AUTO_INCREMENT COMMENT '날짜별 혈당 점수 ID',
+    `member_id`        BIGINT      NOT NULL COMMENT '회원 ID',
+    `score_date`       DATE        NOT NULL COMMENT '점수 날짜(KST)',
+    `glucose_group`    VARCHAR(20) NOT NULL COMMENT '점수 그룹(NON_DM/PRE_DM/DM/GDM)',
+    `status`           VARCHAR(20) NOT NULL COMMENT '상태(FINAL/UNAVAILABLE)',
+    `score`            DOUBLE      NULL COMMENT '혈당 점수(반올림 전)',
+    `average_glucose`  DOUBLE      NULL COMMENT '시간가중 평균 혈당(반올림 전)',
+    `spike_count`      INT         NULL COMMENT '스파이크 횟수',
+    `tir_deduction`    DOUBLE      NULL COMMENT 'TIR 감점',
+    `mean_deduction`   DOUBLE      NULL COMMENT '평균혈당 감점',
+    `cv_deduction`     DOUBLE      NULL COMMENT 'CV 감점',
+    `spike_deduction`  DOUBLE      NULL COMMENT '스파이크 감점',
+    `hypo_deduction`   DOUBLE      NULL COMMENT '저혈당 페널티',
+    `finalized_at`     DATETIME    NOT NULL COMMENT '확정 일시',
+    `created_at`       DATETIME    NOT NULL COMMENT '생성 일시',
+    `updated_at`       DATETIME    NOT NULL COMMENT '수정 일시',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_daily_glucose_score_member_date` (`member_id`, `score_date`)
+) COMMENT '날짜별 혈당 점수(확정)';
+
 CREATE TABLE `food` (
     `id`              BIGINT        NOT NULL AUTO_INCREMENT COMMENT '음식 ID',
     `source`          VARCHAR(20)   NOT NULL COMMENT '출처(DB/CUSTOM)',
@@ -304,6 +325,7 @@ ALTER TABLE `refresh_token`      ADD CONSTRAINT `fk_refresh_token_member`      F
 ALTER TABLE `cgm_connection`     ADD CONSTRAINT `fk_cgm_connection_member`     FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
 ALTER TABLE `cgm_reading`        ADD CONSTRAINT `fk_cgm_reading_member`        FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
 ALTER TABLE `cgm_reading`        ADD CONSTRAINT `fk_cgm_reading_connection`    FOREIGN KEY (`cgm_connection_id`) REFERENCES `cgm_connection` (`id`);
+ALTER TABLE `daily_glucose_score` ADD CONSTRAINT `fk_daily_glucose_score_member` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
 ALTER TABLE `food`               ADD CONSTRAINT `fk_food_member`               FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
 ALTER TABLE `favorite_food`      ADD CONSTRAINT `fk_favorite_food_member`      FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
 ALTER TABLE `favorite_food`      ADD CONSTRAINT `fk_favorite_food_food`        FOREIGN KEY (`food_id`) REFERENCES `food` (`id`);
