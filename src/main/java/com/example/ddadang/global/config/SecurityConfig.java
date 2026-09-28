@@ -25,6 +25,7 @@ public class SecurityConfig {
         "/v3/api-docs/**",
         "/swagger-resources/**",
         "/api/auth/**",
+        "/api/terms",
         "/api/cgm/**",
         "/error"
     };

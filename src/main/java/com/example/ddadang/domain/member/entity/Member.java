@@ -92,4 +92,9 @@ public class Member extends BaseTimeEntity {
         member.status = MemberStatus.ACTIVE;
         return member;
     }
+
+    public void completeSignup(boolean marketingAgreed) {
+        this.signupCompleted = true;
+        this.marketingAgreed = marketingAgreed;
+    }
 }
