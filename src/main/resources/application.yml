@@ -25,3 +25,11 @@ isens:
   client-secret: ${ISENS_CLIENT_SECRET}
   redirect-uri: ${ISENS_REDIRECT_URI}
   scope: offline_access
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-validity: 1h
+  refresh-token-validity: 14d
+
+kakao:
+  api-base-url: https://kapi.kakao.com
