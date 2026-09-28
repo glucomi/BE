@@ -19,15 +19,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * isensUserId를 요청 파라미터로 직접 받는 것은 임시 조치이다.
- * TODO: Member 도메인/인증이 붙으면 로그인한 사용자 principal에서 isensUserId를 조회하도록 교체.
- */
 @Tag(name = "CGM 데이터", description = "i-sens CGM 데이터 동기화 및 자체 DB 기준 조회")
 @RestController
 @RequiredArgsConstructor
@@ -40,16 +37,16 @@ public class CgmController {
 
     @Operation(
         summary = "CGM 데이터 동기화",
-        description = "i-sens /v1/public/cgms에서 start~end 구간 데이터를 가져와 자체 DB에 저장한다. "
+        description = "로그인 회원의 케어센스 연결로 i-sens /v1/public/cgms에서 start~end 구간 데이터를 가져와 자체 DB에 저장한다. "
             + "3개월 초과 구간은 자동으로 분할 호출 후 병합하고, 이미 저장된 시리얼+순번은 건너뛴다."
     )
     @PostMapping("/api/cgm/sync")
     public ResponseEntity<ApiResponse<CgmSyncResultResponse>> sync(
-        @RequestParam String isensUserId,
+        @AuthenticationPrincipal Long memberId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime start,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime end
     ) {
-        return ApiResponse.success(cgmSyncService.syncCgmData(isensUserId, start, end));
+        return ApiResponse.success(cgmSyncService.syncCgmData(memberId, start, end));
     }
 
     @Operation(
@@ -60,7 +57,7 @@ public class CgmController {
     )
     @GetMapping("/api/cgm/readings")
     public ResponseEntity<ApiResponse<Page<CgmReadingResponse>>> getReadings(
-        @RequestParam String isensUserId,
+        @AuthenticationPrincipal Long memberId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime start,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime end,
         @ParameterObject
@@ -68,7 +65,7 @@ public class CgmController {
         Pageable pageable
     ) {
         Page<CgmReadingResponse> readings = cgmReadingRepository
-            .findByIsensUserIdAndEventAtBetweenOrderByEventAtDesc(isensUserId, start, end, pageable)
+            .findByMemberIdAndEventAtBetweenOrderByEventAtDesc(memberId, start, end, pageable)
             .map(CgmReadingResponse::from);
         return ApiResponse.success(readings);
     }
@@ -80,9 +77,9 @@ public class CgmController {
     )
     @PostMapping("/api/cgm/sandbox/samples")
     public ResponseEntity<ApiResponse<SandboxSampleResponse>> generateSandboxSamples(
-        @RequestParam String isensUserId
+        @AuthenticationPrincipal Long memberId
     ) {
-        String accessToken = isensAuthService.getValidAccessToken(isensUserId);
+        String accessToken = isensAuthService.getValidAccessToken(memberId);
         isensCgmApiClient.generateSandboxSamples(accessToken);
         return ApiResponse.success(SuccessStatus.CREATED, SandboxSampleResponse.completed());
     }

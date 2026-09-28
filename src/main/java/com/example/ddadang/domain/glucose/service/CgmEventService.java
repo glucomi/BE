@@ -28,13 +28,13 @@ public class CgmEventService {
     private final IsensCgmApiClient isensCgmApiClient;
 
     public Map<String, List<CgmEventResponse>> getEvents(
-        String isensUserId, OffsetDateTime start, OffsetDateTime end, String eventType
+        Long memberId, OffsetDateTime start, OffsetDateTime end, String eventType
     ) {
         if (eventType != null && !eventType.isBlank() && !CgmEventType.isValid(eventType)) {
             throw new InvalidEventTypeException();
         }
 
-        String accessToken = isensAuthService.getValidAccessToken(isensUserId);
+        String accessToken = isensAuthService.getValidAccessToken(memberId);
 
         Map<String, List<CgmEventResponse>> merged = new LinkedHashMap<>();
         for (var range : CgmDateRangeSplitter.split(start, end)) {

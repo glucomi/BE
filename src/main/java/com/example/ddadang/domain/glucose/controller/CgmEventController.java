@@ -13,6 +13,7 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,13 +33,13 @@ public class CgmEventController {
     )
     @GetMapping("/api/cgm/events")
     public ResponseEntity<ApiResponse<Map<String, List<CgmEventResponse>>>> getEvents(
-        @RequestParam String isensUserId,
+        @AuthenticationPrincipal Long memberId,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime start,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime end,
         @Parameter(description = "bgm/exercise/insulin/ketone/meal/medicine/memo 중 하나, 비워두면 전체 조회")
         @RequestParam(required = false) String eventType
     ) {
-        Map<String, List<CgmEventResponse>> events = cgmEventService.getEvents(isensUserId, start, end, eventType);
+        Map<String, List<CgmEventResponse>> events = cgmEventService.getEvents(memberId, start, end, eventType);
 
         boolean specificTypeRequested = eventType != null && !eventType.isBlank();
         if (specificTypeRequested && events.isEmpty()) {

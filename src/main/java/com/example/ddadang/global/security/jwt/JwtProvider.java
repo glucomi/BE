@@ -45,6 +45,17 @@ public class JwtProvider {
         return LocalDateTime.now().plus(jwtProperties.refreshTokenValidity());
     }
 
+    /**
+     * OAuth state처럼 특정 용도로만 쓰는 단기 토큰. purpose가 다른 토큰(access 등)으로는 검증되지 않는다.
+     */
+    public String createPurposeToken(Long memberId, String purpose, Duration validity) {
+        return createToken(memberId, purpose, validity);
+    }
+
+    public Long parsePurposeToken(String token, String purpose) {
+        return parse(token, purpose);
+    }
+
     public Long parseAccessToken(String token) {
         return parse(token, ACCESS);
     }

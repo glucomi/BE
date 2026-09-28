@@ -9,11 +9,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CgmReadingRepository extends JpaRepository<CgmReading, Long> {
 
-    Page<CgmReading> findByIsensUserIdAndEventAtBetweenOrderByEventAtDesc(
-        String isensUserId, OffsetDateTime start, OffsetDateTime end, Pageable pageable
+    Page<CgmReading> findByMemberIdAndEventAtBetweenOrderByEventAtDesc(
+        Long memberId, OffsetDateTime start, OffsetDateTime end, Pageable pageable
     );
 
-    List<CgmReading> findByIsensUserIdAndSerialNumberAndSeqNumberIn(
-        String isensUserId, String serialNumber, List<Long> seqNumbers
+    List<CgmReading> findByCgmConnectionIdAndSerialNumberAndSeqNumberIn(
+        Long cgmConnectionId, String serialNumber, List<Long> seqNumbers
     );
 }

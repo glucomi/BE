@@ -13,8 +13,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
- * JWT 기반 stateless 인증. 로그인/토큰 재발급과 Swagger 문서만 공개하고 나머지는 access token이 필요하다.
- * TODO: CGM API는 회원 기준 전환 이슈에서 인증 필요로 좁힐 것.
+ * JWT 기반 stateless 인증. 로그인/토큰 재발급, 약관 목록, CGM OAuth 콜백(브라우저 리다이렉트),
+ * Swagger 문서만 공개하고 나머지는 access token이 필요하다.
  */
 @Configuration
 @RequiredArgsConstructor
@@ -26,7 +26,7 @@ public class SecurityConfig {
         "/swagger-resources/**",
         "/api/auth/**",
         "/api/terms",
-        "/api/cgm/**",
+        "/api/cgm/oauth/callback",
         "/error"
     };
 
@@ -39,7 +39,7 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .httpBasic(AbstractHttpConfigurer::disable)
             .formLogin(AbstractHttpConfigurer::disable)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(PUBLIC_PATHS).permitAll()
                 .anyRequest().authenticated())
