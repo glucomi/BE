@@ -108,14 +108,23 @@ erDiagram
         bigint member_id FK "CUSTOM일 때 등록자"
         varchar name
         varchar brand
-        varchar category "일반식품/가공품"
+        varchar category "GENERAL/PROCESSED"
         decimal serving_amount
-        varchar serving_unit "g/ml/개"
+        varchar serving_unit "G/ML"
         decimal kcal
         decimal carbohydrate_g
+        decimal sugars_g
+        decimal dietary_fiber_g
         decimal protein_g
         decimal fat_g
-        varchar glucose_grade "A+/A/B+/B/F"
+        decimal saturated_fat_g
+        decimal trans_fat_g
+        decimal fatty_acid_g
+        decimal unsaturated_fat_g
+        decimal cholesterol_mg
+        decimal sodium_mg
+        decimal caffeine_mg
+        varchar glucose_grade "A_PLUS/A/B_PLUS/B/C/F"
     }
     favorite_food {
         bigint id PK
