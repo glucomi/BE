@@ -141,7 +141,8 @@ CREATE TABLE `meal_record` (
     `memo`        VARCHAR(1000) NULL COMMENT '메모',
     `created_at`  DATETIME      NOT NULL COMMENT '생성 일시',
     `updated_at`  DATETIME      NOT NULL COMMENT '수정 일시',
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id`),
+    KEY `idx_meal_record_member_eaten_at` (`member_id`, `eaten_at`)
 ) COMMENT '식사 기록';
 
 CREATE TABLE `meal_record_item` (
@@ -149,11 +150,20 @@ CREATE TABLE `meal_record_item` (
     `meal_record_id`  BIGINT       NOT NULL COMMENT '식사 기록 ID',
     `food_id`         BIGINT       NOT NULL COMMENT '음식 ID',
     `amount`          DECIMAL(8,2) NOT NULL COMMENT '섭취량',
-    `unit`            VARCHAR(10)  NOT NULL COMMENT '섭취 단위',
-    `kcal`            DECIMAL(8,2) NULL COMMENT '열량 스냅샷(kcal)',
+    `unit`            VARCHAR(10)  NOT NULL COMMENT '섭취 단위(G/ML/SERVING)',
+    `kcal`            DECIMAL(8,2) NOT NULL COMMENT '열량 스냅샷(kcal)',
     `carbohydrate_g`  DECIMAL(8,2) NULL COMMENT '탄수화물 스냅샷(g)',
+    `sugars_g`        DECIMAL(8,2) NULL COMMENT '당류 스냅샷(g)',
+    `dietary_fiber_g` DECIMAL(8,2) NULL COMMENT '식이섬유 스냅샷(g)',
     `protein_g`       DECIMAL(8,2) NULL COMMENT '단백질 스냅샷(g)',
     `fat_g`           DECIMAL(8,2) NULL COMMENT '지방 스냅샷(g)',
+    `saturated_fat_g` DECIMAL(8,2) NULL COMMENT '포화지방 스냅샷(g)',
+    `trans_fat_g`     DECIMAL(8,2) NULL COMMENT '트랜스지방 스냅샷(g)',
+    `fatty_acid_g`    DECIMAL(8,2) NULL COMMENT '지방산 스냅샷(g)',
+    `unsaturated_fat_g` DECIMAL(8,2) NULL COMMENT '불포화지방산 스냅샷(g)',
+    `cholesterol_mg`  DECIMAL(8,2) NULL COMMENT '콜레스테롤 스냅샷(mg)',
+    `sodium_mg`       DECIMAL(8,2) NULL COMMENT '나트륨 스냅샷(mg)',
+    `caffeine_mg`     DECIMAL(8,2) NULL COMMENT '카페인 스냅샷(mg)',
     `created_at`      DATETIME     NOT NULL COMMENT '생성 일시',
     `updated_at`      DATETIME     NOT NULL COMMENT '수정 일시',
     PRIMARY KEY (`id`)

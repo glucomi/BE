@@ -9,12 +9,18 @@ import com.example.ddadang.domain.record.meal.entity.Food;
 import com.example.ddadang.domain.record.meal.enums.FoodSource;
 import com.example.ddadang.domain.record.meal.repository.FavoriteFoodRepository;
 import com.example.ddadang.domain.record.meal.repository.FoodRepository;
+import com.example.ddadang.domain.record.meal.repository.MealRecordItemRepository;
 import com.example.ddadang.domain.record.meal.status.MealErrorStatus;
 import com.example.ddadang.global.exception.GeneralException;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +33,7 @@ public class FoodService {
     private final FoodRepository foodRepository;
     private final FavoriteFoodRepository favoriteFoodRepository;
     private final MemberRepository memberRepository;
+    private final MealRecordItemRepository mealRecordItemRepository;
 
     public Page<FoodSummaryResponse> search(Long memberId, String keyword, Pageable pageable) {
         Page<Food> foods = foodRepository.search(memberId, keyword.strip(), pageable);
@@ -57,6 +64,17 @@ public class FoodService {
     @Transactional
     public void removeFavorite(Long memberId, Long foodId) {
         favoriteFoodRepository.findByMemberIdAndFoodId(memberId, foodId).ifPresent(favoriteFoodRepository::delete);
+    }
+
+    /**
+     * 식사 기록에 담았던 음식을 가장 최근에 먹은 순으로 중복 없이 조회한다.
+     */
+    public Page<FoodSummaryResponse> getRecentFoods(Long memberId, Pageable pageable) {
+        Page<Long> foodIds = mealRecordItemRepository.findRecentFoodIds(memberId, pageable);
+        Map<Long, Food> foodsById = foodRepository.findAllById(foodIds.getContent()).stream()
+            .collect(Collectors.toMap(Food::getId, Function.identity()));
+        List<Food> ordered = foodIds.getContent().stream().map(foodsById::get).toList();
+        return withFavorite(memberId, new PageImpl<>(ordered, pageable, foodIds.getTotalElements()));
     }
 
     public Page<FoodSummaryResponse> getCustomFoods(Long memberId, Pageable pageable) {
