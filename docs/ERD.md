@@ -142,8 +142,8 @@ erDiagram
         bigint meal_record_id FK
         bigint food_id FK
         decimal amount
-        varchar unit
-        decimal kcal "기록 시점 스냅샷"
+        varchar unit "G/ML/SERVING"
+        decimal kcal "기록 시점 스냅샷(음식과 같은 영양 컬럼 전체)"
         decimal carbohydrate_g
         decimal protein_g
         decimal fat_g
