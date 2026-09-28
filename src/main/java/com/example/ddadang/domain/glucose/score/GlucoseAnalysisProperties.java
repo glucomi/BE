@@ -13,7 +13,8 @@ public record GlucoseAnalysisProperties(
     Mean mean,
     Spike spike,
     Score score,
-    Map<GlucoseGroup, GroupParams> groups
+    Map<GlucoseGroup, GroupParams> groups,
+    Freeze freeze
 ) {
 
     public GroupParams group(GlucoseGroup group) {
@@ -56,6 +57,12 @@ public record GlucoseAnalysisProperties(
         double hypoSevereWeight,
         double hypoMax
     ) {
+    }
+
+    /**
+     * 날짜별 점수 확정(freeze): 해당 날짜 다음날 00:00 + delay가 지나면 확정 저장한다.
+     */
+    public record Freeze(Duration delay, int lookbackDays, String cron) {
     }
 
     /**
