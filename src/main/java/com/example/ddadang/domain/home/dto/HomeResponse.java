@@ -1,6 +1,8 @@
 package com.example.ddadang.domain.home.dto;
 
 import com.example.ddadang.domain.glucose.enums.CgmProvider;
+import com.example.ddadang.domain.glucose.score.GlucoseScore;
+import com.example.ddadang.domain.glucose.score.GlucoseScoreStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -46,10 +48,13 @@ public record HomeResponse(
     }
 
     public record Summary(
-        @Schema(description = "혈당 점수(0~100). 계산 기준 확정 전까지 null") Integer glucoseScore,
+        @Schema(description = "혈당 점수(0~100). status가 FINAL/PROVISIONAL일 때만 값이 있음") Integer glucoseScore,
+        @Schema(description = "FINAL: 확정(지난 날), PROVISIONAL: 진행 중(잠정), MEASURING: 측정 중(데이터 부족), "
+            + "UNAVAILABLE: 미산출(측정 0건/커버리지 70% 미만/미래 날짜)") GlucoseScoreStatus glucoseScoreStatus,
+        @Schema(description = "항목별 감점(양수). 점수가 없으면 null") GlucoseScore.Deductions glucoseScoreDeductions,
         @Schema(description = "최고 혈당(mg/dL)") Integer maxGlucose,
-        @Schema(description = "평균 혈당(mg/dL)") Integer averageGlucose,
-        @Schema(description = "스파이크 횟수. 계산 기준 확정 전까지 null") Integer spikeCount,
+        @Schema(description = "시간가중 평균 혈당(mg/dL). 측정 0건/커버리지 70% 미만이면 null") Integer averageGlucose,
+        @Schema(description = "스파이크 횟수. 측정 0건/미래 날짜면 null") Integer spikeCount,
         @Schema(description = "식사 기록 탄수화물 합계(g)") BigDecimal carbohydrateG
     ) {
     }

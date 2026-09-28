@@ -25,7 +25,7 @@ public class HomeController {
     @Operation(
         summary = "홈 화면 조회",
         description = "선택한 날짜(KST 00:00~24:00)의 센서 상태, 목표 혈당 범위, CGM 그래프 포인트, 요약 지표, 식사 표시를 조회한다. "
-            + "CGM 데이터는 /api/cgm/sync로 적재된 자체 DB 기준. 혈당 점수/스파이크 횟수는 계산 기준 확정 전까지 null."
+            + "CGM 데이터는 /api/cgm/sync로 적재된 자체 DB 기준. 지난 날은 확정값, 오늘은 00:00~현재 기준 잠정값."
     )
     @GetMapping("/api/home")
     public ResponseEntity<ApiResponse<HomeResponse>> getHome(
@@ -33,7 +33,7 @@ public class HomeController {
         @Parameter(description = "조회 날짜(yyyy-MM-dd). 비우면 오늘(KST)", example = "2026-09-28")
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     ) {
-        LocalDate target = date != null ? date : LocalDate.now(HomeService.KST);
+        LocalDate target = date != null ? date : homeService.today();
         return ApiResponse.success(homeService.getHome(memberId, target));
     }
 }

@@ -2,6 +2,8 @@ package com.example.ddadang.domain.home.service;
 
 import com.example.ddadang.domain.glucose.entity.CgmConnection;
 import com.example.ddadang.domain.glucose.entity.CgmReading;
+import com.example.ddadang.domain.glucose.score.DailyGlucoseAnalysis;
+import com.example.ddadang.domain.glucose.service.GlucoseAnalysisService;
 import com.example.ddadang.domain.glucose.service.GlucoseQueryService;
 import com.example.ddadang.domain.home.dto.HomeResponse;
 import com.example.ddadang.domain.home.dto.HomeResponse.Graph;
@@ -14,7 +16,9 @@ import com.example.ddadang.domain.member.dto.response.MemberResponse;
 import com.example.ddadang.domain.member.service.MemberService;
 import com.example.ddadang.domain.record.meal.dto.response.MealRecordResponse;
 import com.example.ddadang.domain.record.meal.service.MealRecordService;
+import com.example.ddadang.global.config.ClockConfig;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -31,11 +35,17 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class HomeService {
 
-    public static final ZoneId KST = ZoneId.of("Asia/Seoul");
+    private static final ZoneId KST = ClockConfig.KST;
 
     private final MemberService memberService;
     private final GlucoseQueryService glucoseQueryService;
+    private final GlucoseAnalysisService glucoseAnalysisService;
     private final MealRecordService mealRecordService;
+    private final Clock clock;
+
+    public LocalDate today() {
+        return LocalDate.now(clock);
+    }
 
     public HomeResponse getHome(Long memberId, LocalDate date) {
         MemberResponse member = memberService.getMe(memberId);
@@ -45,6 +55,10 @@ public class HomeService {
         List<CgmReading> readings = glucoseQueryService.getReadings(memberId, from, to);
         List<MealRecordResponse> meals = mealRecordService.getMealRecords(
             memberId, from.toLocalDateTime(), to.toLocalDateTime()
+        );
+
+        DailyGlucoseAnalysis analysis = glucoseAnalysisService.analyze(
+            member.diabetesType(), readings, date, KST, OffsetDateTime.now(clock)
         );
 
         IntSummaryStatistics stats = readings.stream()
@@ -60,10 +74,12 @@ public class HomeService {
                 ? null : new TargetRange(member.targetGlucoseMin(), member.targetGlucoseMax()),
             new Graph(toPoints(readings), hasReadings ? stats.getMin() : null, max),
             new Summary(
-                null,
+                analysis.score().score(),
+                analysis.score().status(),
+                analysis.score().deductions(),
                 max,
-                hasReadings ? (int) Math.round(stats.getAverage()) : null,
-                null,
+                analysis.averageGlucose(),
+                analysis.spikeCount(),
                 sumCarbohydrate(meals)
             ),
             meals.stream().map(this::toMeal).toList()
