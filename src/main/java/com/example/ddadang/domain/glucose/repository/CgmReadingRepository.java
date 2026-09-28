@@ -13,6 +13,10 @@ public interface CgmReadingRepository extends JpaRepository<CgmReading, Long> {
         Long memberId, OffsetDateTime start, OffsetDateTime end, Pageable pageable
     );
 
+    List<CgmReading> findByMemberIdAndEventAtGreaterThanEqualAndEventAtLessThanOrderByEventAtAsc(
+        Long memberId, OffsetDateTime from, OffsetDateTime to
+    );
+
     List<CgmReading> findByCgmConnectionIdAndSerialNumberAndSeqNumberIn(
         Long cgmConnectionId, String serialNumber, List<Long> seqNumbers
     );

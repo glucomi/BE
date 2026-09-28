@@ -9,6 +9,8 @@ import com.example.ddadang.domain.record.meal.entity.MealRecordItem;
 import com.example.ddadang.domain.record.meal.repository.MealRecordRepository;
 import com.example.ddadang.domain.record.meal.status.MealErrorStatus;
 import com.example.ddadang.global.exception.GeneralException;
+import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +37,18 @@ public class MealRecordService {
         }
 
         return MealRecordResponse.from(mealRecordRepository.save(record));
+    }
+
+    /**
+     * [from, to) 구간의 식사 기록을 시간순으로 조회한다(홈 화면 등 다른 도메인 조회용).
+     */
+    @Transactional(readOnly = true)
+    public List<MealRecordResponse> getMealRecords(Long memberId, LocalDateTime from, LocalDateTime to) {
+        return mealRecordRepository
+            .findByMemberIdAndEatenAtGreaterThanEqualAndEatenAtLessThanOrderByEatenAtAsc(memberId, from, to)
+            .stream()
+            .map(MealRecordResponse::from)
+            .toList();
     }
 
     @Transactional(readOnly = true)
