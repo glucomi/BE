@@ -73,3 +73,7 @@ glucose:
         mean-slope: 0.55
         cv-start: 12
         cv-slope: 0.45
+    freeze:
+      delay: 0m             # 자정 + delay 지나면 전날 점수를 확정 저장 (스펙: 자정). 유예가 필요하면 예: 6h
+      lookback-days: 7      # 배치가 확정되지 않은 날을 거슬러 확인하는 일수
+      cron: "0 10 * * * *"  # 확정 배치 실행 주기 (KST)
