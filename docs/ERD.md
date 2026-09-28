@@ -8,6 +8,7 @@ erDiagram
     member ||--o{ cgm_connection : connects
     member ||--o{ cgm_reading : owns
     cgm_connection ||--o{ cgm_reading : syncs
+    member ||--o{ daily_glucose_score : "scored"
 
     member ||--o{ food : "registers(CUSTOM)"
     member ||--o{ favorite_food : likes
@@ -100,6 +101,23 @@ erDiagram
         int trend
         int error_code
         int min_max_flag
+    }
+
+    daily_glucose_score {
+        bigint id PK
+        bigint member_id FK
+        date score_date "UK(member_id, score_date)"
+        varchar glucose_group "NON_DM/PRE_DM/DM/GDM"
+        varchar status "FINAL/UNAVAILABLE"
+        double score "반올림 전 소수"
+        double average_glucose
+        int spike_count
+        double tir_deduction
+        double mean_deduction
+        double cv_deduction
+        double spike_deduction
+        double hypo_deduction
+        datetime finalized_at
     }
 
     food {
@@ -240,7 +258,7 @@ erDiagram
 | 도메인 | 테이블 | 역할 |
 |---|---|---|
 | **member** | member, member_agreement, member_withdrawal, refresh_token | 가입·탈퇴, 프로필, 목표 혈당, 알림 설정 |
-| **glucose** | cgm_connection, cgm_reading | 센서 연결·동기화, 그래프 지표 계산 |
+| **glucose** | cgm_connection, cgm_reading, daily_glucose_score | 센서 연결·동기화, 그래프 지표 계산 |
 | **record** | food, favorite_food, meal_record, meal_record_item, meal_record_photo, insulin_product, member_insulin, insulin_record, member_medication, medication_record, exercise, exercise_record, glucose_record, weight_record, memo_record, memo_record_photo | 사용자가 직접 입력하는 기록 7종 |
 | **home** | (테이블 없음) | 오늘의 기록 타임라인, 큐레이션 카드 |
 
