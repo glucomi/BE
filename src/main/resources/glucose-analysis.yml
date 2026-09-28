@@ -1,0 +1,79 @@
+# 평균 혈당 · 스파이크 · 혈당 점수 계산 파라미터.
+# 더미/추정 기반 잠정값이며, 실 CGM 데이터로 분포 확인 후 이 파일에서 튜닝한다.
+glucose:
+  analysis:
+    sensor:
+      bg-min: 10            # 센서 유효 범위(mg/dL). 벗어나면 오류값으로 제거
+      bg-max: 600
+    mean:
+      gap-threshold: 20m    # 이 간격을 넘는 측정 쌍은 결측으로 보고 적분 제외
+      coverage-min-percent: 70
+    spike:
+      peak-min: 180         # 고혈당 구간 기준
+      rise-threshold: 50    # 피크 전 window 내 최솟값 대비 상승폭
+      window: 60m
+      sustain: 15m          # 고혈당 구간 최소 지속
+      merge-interval: 120m  # 직전 스파이크 시작과 이 간격 미만이면 병합
+      gap-skip: 15m         # 고혈당 구간 내 이 간격 초과 결측이면 구간 분리
+    score:
+      provisional-min-covered: 3h   # 진행 중(오늘) 점수 표시 최소 측정 시간
+      cv-min-covered: 6h            # 이 미만이면 CV 감점 보류
+      tir-max: 10
+      tir-weight: 0.10              # (100 - 달성률%) × weight
+      mean-max: 10
+      cv-max: 15
+      spike-per-count: 3
+      spike-max: 10
+      severe-hypo-below: 54         # TBR2(초저혈당) 기준
+      hypo-mild-weight: 2           # 초과 TBR1 %p당 감점
+      hypo-severe-weight: 4         # 초과 TBR2 %p당 감점
+      hypo-max: 20
+    groups:
+      NON_DM:
+        range-low: 70
+        range-high: 140
+        tir-target-percent: 95
+        tbr1-allowed-percent: 0
+        tbr2-allowed-percent: 0
+        mild-hypo-below: 70
+        mean-start: 100
+        mean-slope: 1.0
+        cv-start: 12
+        cv-slope: 0.45
+      PRE_DM:
+        range-low: 70
+        range-high: 140
+        tir-target-percent: 85
+        tbr1-allowed-percent: 4
+        tbr2-allowed-percent: 1
+        mild-hypo-below: 70
+        mean-start: 100
+        mean-slope: 0.53
+        cv-start: 12
+        cv-slope: 0.45
+      DM:
+        range-low: 70
+        range-high: 180
+        tir-target-percent: 70
+        tbr1-allowed-percent: 4
+        tbr2-allowed-percent: 1
+        mild-hypo-below: 70
+        mean-start: 120
+        mean-slope: 0.29
+        cv-start: 14
+        cv-slope: 0.60
+      GDM:
+        range-low: 63
+        range-high: 140
+        tir-target-percent: 70
+        tbr1-allowed-percent: 4
+        tbr2-allowed-percent: 1
+        mild-hypo-below: 63
+        mean-start: 92
+        mean-slope: 0.55
+        cv-start: 12
+        cv-slope: 0.45
+    freeze:
+      delay: 0m             # 자정 + delay 지나면 전날 점수를 확정 저장 (스펙: 자정). 유예가 필요하면 예: 6h
+      lookback-days: 7      # 배치가 확정되지 않은 날을 거슬러 확인하는 일수
+      cron: "0 10 * * * *"  # 확정 배치 실행 주기 (KST)

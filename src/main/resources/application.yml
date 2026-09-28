@@ -1,6 +1,8 @@
 spring:
   application:
     name: DDADNG
+  config:
+    import: classpath:glucose-analysis.yml
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -25,3 +27,21 @@ isens:
   client-secret: ${ISENS_CLIENT_SECRET}
   redirect-uri: ${ISENS_REDIRECT_URI}
   scope: offline_access
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-validity: 1h
+  refresh-token-validity: 14d
+
+kakao:
+  api-base-url: https://kapi.kakao.com
+
+# 날짜별 혈당 점수 확정 배치 (테스트에서는 비활성)
+glucose:
+  score-freeze:
+    scheduler-enabled: true
+
+# 음식 DB(식약처) 적재 전까지 샘플 음식 데이터 사용
+food:
+  sample-data:
+    enabled: true
