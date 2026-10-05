@@ -45,6 +45,60 @@ class ExerciseRecordIntegrationTest extends IntegrationTest {
     }
 
     @Test
+    void 운동_목록의_30분_소모_열량은_최근_체중_기준이고_체중이_없으면_null() throws Exception {
+        Member me = createMember();
+        exerciseRepository.save(new Exercise("열량확인용 운동", BigDecimal.valueOf(4.0), false));
+
+        mockMvc.perform(get("/api/exercises").param("keyword", "열량확인용").header("Authorization", bearer(me)))
+            .andExpect(jsonPath("$.result.length()").value(1))
+            .andExpect(jsonPath("$.result[0].kcalPer30Min").doesNotExist());
+
+        weight(me, "2026-10-01T00:00:00", "60.0");
+        weight(me, "2026-10-05T00:00:00", "50.0");
+        // 4.0 × 50kg × 0.5h = 100
+        mockMvc.perform(get("/api/exercises").param("keyword", "열량확인용").header("Authorization", bearer(me)))
+            .andExpect(jsonPath("$.result[0].kcalPer30Min").value(100.0));
+
+        mockMvc.perform(get("/api/exercises").param("keyword", "가".repeat(21)).header("Authorization", bearer(me)))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void 최근_기록한_운동은_최신순_중복없이_최대_4개이고_기록을_지우면_빠진다() throws Exception {
+        Member me = createMember();
+        mockMvc.perform(get("/api/exercises/recent").header("Authorization", bearer(me)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.result.length()").value(0));
+
+        Exercise a = exercise(3.0);
+        Exercise b = exercise(4.0);
+        Exercise c = exercise(5.0);
+        Exercise d = exercise(6.0);
+        Exercise e = exercise(7.0);
+        create(me, a, "2026-10-01T08:00:00", 30, null);
+        create(me, b, "2026-10-02T08:00:00", 30, null);
+        create(me, c, "2026-10-03T08:00:00", 30, null);
+        create(me, d, "2026-10-04T08:00:00", 30, null);
+        Integer latestA = create(me, a, "2026-10-06T08:00:00", 30, null);
+        Integer eRecord = create(me, e, "2026-10-05T08:00:00", 30, null);
+        create(createMember(), b, "2026-10-07T08:00:00", 30, null);
+
+        mockMvc.perform(get("/api/exercises/recent").header("Authorization", bearer(me)))
+            .andExpect(jsonPath("$.result.length()").value(4))
+            .andExpect(jsonPath("$.result[0].exerciseId").value(a.getId()))
+            .andExpect(jsonPath("$.result[1].exerciseId").value(e.getId()))
+            .andExpect(jsonPath("$.result[2].exerciseId").value(d.getId()))
+            .andExpect(jsonPath("$.result[3].exerciseId").value(c.getId()));
+
+        mockMvc.perform(delete("/api/exercise-records/{id}", eRecord).header("Authorization", bearer(me)));
+        mockMvc.perform(get("/api/exercises/recent").header("Authorization", bearer(me)))
+            .andExpect(jsonPath("$.result[1].exerciseId").value(d.getId()))
+            .andExpect(jsonPath("$.result[3].exerciseId").value(b.getId()));
+        mockMvc.perform(get("/api/exercise-records/{id}", latestA).header("Authorization", bearer(me)))
+            .andExpect(status().isOk());
+    }
+
+    @Test
     void 운동_일시_이전_가장_최근_체중으로_소모_열량을_계산한다() throws Exception {
         Member me = createMember();
         Exercise exercise = exercise(4.0);
