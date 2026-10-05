@@ -54,6 +54,15 @@ public class MealRecord extends BaseTimeEntity {
         items.add(item);
     }
 
+    /**
+     * 식사 일시/메모를 바꾸고 메뉴를 모두 비운다. 새 메뉴는 {@link #addItem}으로 다시 담는다(기존 메뉴는 orphanRemoval로 삭제).
+     */
+    public void update(LocalDateTime eatenAt, String memo) {
+        this.eatenAt = eatenAt;
+        this.memo = memo;
+        items.clear();
+    }
+
     public boolean isOwnedBy(Long memberId) {
         return member.getId().equals(memberId);
     }
