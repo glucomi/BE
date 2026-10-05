@@ -1,92 +1,93 @@
 package com.example.ddadang.domain.record.weight;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.ddadang.domain.member.entity.Member;
+import com.example.ddadang.domain.record.weight.repository.WeightRecordRepository;
 import com.example.ddadang.support.IntegrationTest;
-import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
 class WeightRecordIntegrationTest extends IntegrationTest {
 
-    @Test
-    void 체중_기록을_등록하고_날짜별로_시간순_조회한다() throws Exception {
-        Member me = createMember();
-        create(me, "2026-10-05T21:00:00", "48.1");
-        create(me, "2026-10-05T07:00:00", "47.7");
-        create(me, "2026-10-04T23:59:59", "47.9");
-        create(createMember(), "2026-10-05T08:00:00", "70.0");
+    @Autowired
+    private WeightRecordRepository weightRecordRepository;
 
-        mockMvc.perform(get("/api/weight-records").param("date", "2026-10-05").header("Authorization", bearer(me)))
+    @Test
+    void 같은_날짜에_다시_저장하면_새로_만들지_않고_갱신한다() throws Exception {
+        Member me = createMember();
+        save(me, "2026-10-05", "47.7");
+        save(me, "2026-10-05", "48.1");
+
+        mockMvc.perform(get("/api/weight-records/{date}", "2026-10-05").header("Authorization", bearer(me)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.result.length()").value(2))
-            .andExpect(jsonPath("$.result[0].measuredAt").value("2026-10-05T07:00:00"))
-            .andExpect(jsonPath("$.result[0].weightKg").value(47.7))
-            .andExpect(jsonPath("$.result[1].weightKg").value(48.1));
+            .andExpect(jsonPath("$.result.date").value("2026-10-05"))
+            .andExpect(jsonPath("$.result.weightKg").value(48.1));
+        assertThat(weightRecordRepository.findByMemberIdOrderByMeasuredAtDesc(me.getId())).hasSize(1);
     }
 
     @Test
-    void 체중_기록을_수정하고_삭제한다() throws Exception {
+    void 기록이_없는_날짜는_null이고_최근_체중은_가장_최근_날짜_기록이다() throws Exception {
         Member me = createMember();
-        Integer id = create(me, "2026-10-05T07:00:00", "47.7");
-
-        mockMvc.perform(put("/api/weight-records/{id}", id)
-                .header("Authorization", bearer(me))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"measuredAt\":\"2026-10-05T08:00:00\",\"weightKg\":47.2}"))
+        mockMvc.perform(get("/api/weight-records/latest").header("Authorization", bearer(me)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.result.measuredAt").value("2026-10-05T08:00:00"))
-            .andExpect(jsonPath("$.result.weightKg").value(47.2));
+            .andExpect(jsonPath("$.result").doesNotExist());
 
-        mockMvc.perform(delete("/api/weight-records/{id}", id).header("Authorization", bearer(me)))
-            .andExpect(status().isOk());
-        mockMvc.perform(get("/api/weight-records/{id}", id).header("Authorization", bearer(me)))
+        save(me, "2026-10-03", "47.0");
+        save(me, "2026-10-05", "47.7");
+        save(me, "2026-10-04", "47.3");
+        save(createMember(), "2026-10-06", "70.0");
+
+        mockMvc.perform(get("/api/weight-records/{date}", "2026-10-06").header("Authorization", bearer(me)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.result").doesNotExist());
+        mockMvc.perform(get("/api/weight-records/latest").header("Authorization", bearer(me)))
+            .andExpect(jsonPath("$.result.date").value("2026-10-05"))
+            .andExpect(jsonPath("$.result.weightKg").value(47.7));
+    }
+
+    @Test
+    void 날짜별_기록을_삭제한다() throws Exception {
+        Member me = createMember();
+        save(me, "2026-10-05", "47.7");
+
+        mockMvc.perform(delete("/api/weight-records/{date}", "2026-10-05").header("Authorization", bearer(createMember())))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.code").value("WEIGHT_RECORD_4040"));
-    }
-
-    @Test
-    void 다른_회원의_체중_기록은_조회_수정_삭제할_수_없다() throws Exception {
-        Integer id = create(createMember(), "2026-10-05T07:00:00", "47.7");
-        String other = bearer(createMember());
-
-        mockMvc.perform(get("/api/weight-records/{id}", id).header("Authorization", other))
-            .andExpect(status().isNotFound());
-        mockMvc.perform(put("/api/weight-records/{id}", id)
-                .header("Authorization", other)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"measuredAt\":\"2026-10-05T07:00:00\",\"weightKg\":50}"))
-            .andExpect(status().isNotFound());
-        mockMvc.perform(delete("/api/weight-records/{id}", id).header("Authorization", other))
+        mockMvc.perform(delete("/api/weight-records/{date}", "2026-10-05").header("Authorization", bearer(me)))
+            .andExpect(status().isOk());
+        mockMvc.perform(get("/api/weight-records/{date}", "2026-10-05").header("Authorization", bearer(me)))
+            .andExpect(jsonPath("$.result").doesNotExist());
+        mockMvc.perform(delete("/api/weight-records/{date}", "2026-10-05").header("Authorization", bearer(me)))
             .andExpect(status().isNotFound());
     }
 
     @Test
-    void 체중이_범위를_벗어나거나_소수_2자리면_400() throws Exception {
+    void 체중이_0_이하거나_200_초과거나_소수_2자리면_400() throws Exception {
         Member me = createMember();
 
-        for (String weight : new String[] {"19.9", "300.1", "47.75"}) {
-            mockMvc.perform(post("/api/weight-records")
+        for (String weight : new String[] {"0", "200.1", "47.75"}) {
+            mockMvc.perform(put("/api/weight-records/{date}", "2026-10-05")
                     .header("Authorization", bearer(me))
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content("{\"measuredAt\":\"2026-10-05T07:00:00\",\"weightKg\":%s}".formatted(weight)))
+                    .content("{\"weightKg\":%s}".formatted(weight)))
                 .andExpect(status().isBadRequest());
         }
+        save(me, "2026-10-05", "200.0");
     }
 
-    private Integer create(Member member, String measuredAt, String weightKg) throws Exception {
-        String body = mockMvc.perform(post("/api/weight-records")
+    private void save(Member member, String date, String weightKg) throws Exception {
+        mockMvc.perform(put("/api/weight-records/{date}", date)
                 .header("Authorization", bearer(member))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"measuredAt\":\"%s\",\"weightKg\":%s}".formatted(measuredAt, weightKg)))
-            .andExpect(status().isCreated())
-            .andReturn().getResponse().getContentAsString();
-        return JsonPath.read(body, "$.result.weightRecordId");
+                .content("{\"weightKg\":%s}".formatted(weightKg)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.result.date").value(date));
     }
 }
