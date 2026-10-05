@@ -13,7 +13,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -30,8 +29,6 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ExerciseRecord extends BaseTimeEntity {
-
-    private static final BigDecimal MINUTES_PER_HOUR = BigDecimal.valueOf(60);
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -82,9 +79,6 @@ public class ExerciseRecord extends BaseTimeEntity {
         this.exercise = exercise;
         this.performedAt = performedAt;
         this.durationMin = durationMin;
-        this.kcal = weightKg == null ? null : exercise.getMet()
-            .multiply(weightKg)
-            .multiply(BigDecimal.valueOf(durationMin))
-            .divide(MINUTES_PER_HOUR, 2, RoundingMode.HALF_UP);
+        this.kcal = exercise.kcalFor(weightKg, durationMin);
     }
 }
