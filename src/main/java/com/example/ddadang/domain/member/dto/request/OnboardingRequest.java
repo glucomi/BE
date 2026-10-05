@@ -17,7 +17,7 @@ public record OnboardingRequest(
     @NotNull @DecimalMin("50.0") @DecimalMax("250.0") BigDecimal heightCm,
 
     @Schema(description = "STEP 03 몸무게(kg)", example = "47.7")
-    @NotNull @DecimalMin("20.0") @DecimalMax("300.0") BigDecimal weightKg,
+    @NotNull @DecimalMin(value = "0.0", inclusive = false) @DecimalMax("200.0") BigDecimal weightKg,
 
     @Schema(description = "STEP 04 목표 혈당 하한(mg/dL)", example = "70")
     @NotNull @Min(40) @Max(400) Integer targetGlucoseMin,
