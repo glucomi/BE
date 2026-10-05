@@ -41,19 +41,27 @@ public class MedicationRecord extends BaseTimeEntity {
     @Column(name = "taken_at", nullable = false)
     private LocalDateTime takenAt;
 
+    /** 기록 화면에서 수정할 수 있는 제품명(MO-DRUG-010). 내 복용약 제품명을 기본값으로 받아 기록마다 저장한다. */
+    @Column(name = "product_name", length = 20)
+    private String productName;
+
     @Column(name = "memo", length = 1000)
     private String memo;
 
-    public MedicationRecord(Member member, MemberMedication memberMedication, LocalDateTime takenAt, String memo) {
+    public MedicationRecord(
+        Member member, MemberMedication memberMedication, LocalDateTime takenAt, String productName, String memo
+    ) {
         this.member = member;
         this.memberMedication = memberMedication;
         this.takenAt = takenAt;
+        this.productName = productName;
         this.memo = memo;
     }
 
-    public void update(MemberMedication memberMedication, LocalDateTime takenAt, String memo) {
+    public void update(MemberMedication memberMedication, LocalDateTime takenAt, String productName, String memo) {
         this.memberMedication = memberMedication;
         this.takenAt = takenAt;
+        this.productName = productName;
         this.memo = memo;
     }
 

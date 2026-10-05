@@ -40,15 +40,6 @@ public class MedicationService {
         return MemberMedicationResponse.from(medication);
     }
 
-    @Transactional
-    public MemberMedicationResponse updateMyMedication(
-        Long memberId, Long memberMedicationId, MemberMedicationRequest request
-    ) {
-        MemberMedication medication = getActive(memberId, memberMedicationId);
-        medication.update(request.category(), productName(request));
-        return MemberMedicationResponse.from(medication);
-    }
-
     /**
      * soft delete. 이미 남긴 복약 기록은 그대로 조회된다.
      */

@@ -41,7 +41,7 @@ public class MemberMedication extends BaseTimeEntity {
     @Column(name = "category", nullable = false, length = 30)
     private MedicationCategory category;
 
-    @Column(name = "product_name", length = 100)
+    @Column(name = "product_name", length = 20)
     private String productName;
 
     @Column(name = "deleted_at")
@@ -49,11 +49,6 @@ public class MemberMedication extends BaseTimeEntity {
 
     public MemberMedication(Member member, MedicationCategory category, String productName) {
         this.member = member;
-        this.category = category;
-        this.productName = productName;
-    }
-
-    public void update(MedicationCategory category, String productName) {
         this.category = category;
         this.productName = productName;
     }

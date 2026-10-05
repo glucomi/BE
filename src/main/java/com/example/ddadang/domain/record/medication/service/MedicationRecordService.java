@@ -26,7 +26,8 @@ public class MedicationRecordService {
     public MedicationRecordResponse create(Long memberId, MedicationRecordRequest request) {
         MemberMedication memberMedication = medicationService.getActive(memberId, request.memberMedicationId());
         MedicationRecord record = new MedicationRecord(
-            memberRepository.getReferenceById(memberId), memberMedication, request.takenAt(), memo(request)
+            memberRepository.getReferenceById(memberId), memberMedication, request.takenAt(), productName(request),
+            memo(request)
         );
         return MedicationRecordResponse.from(medicationRecordRepository.save(record));
     }
@@ -59,7 +60,7 @@ public class MedicationRecordService {
         MemberMedication memberMedication = record.getMemberMedication().getId().equals(request.memberMedicationId())
             ? record.getMemberMedication()
             : medicationService.getActive(memberId, request.memberMedicationId());
-        record.update(memberMedication, request.takenAt(), memo(request));
+        record.update(memberMedication, request.takenAt(), productName(request), memo(request));
         return MedicationRecordResponse.from(record);
     }
 
@@ -72,6 +73,10 @@ public class MedicationRecordService {
         return medicationRecordRepository.findWithMedicationById(medicationRecordId)
             .filter(found -> found.isOwnedBy(memberId))
             .orElseThrow(() -> new GeneralException(MedicationErrorStatus.MEDICATION_RECORD_NOT_FOUND));
+    }
+
+    private String productName(MedicationRecordRequest request) {
+        return request.productName() == null || request.productName().isBlank() ? null : request.productName().strip();
     }
 
     private String memo(MedicationRecordRequest request) {

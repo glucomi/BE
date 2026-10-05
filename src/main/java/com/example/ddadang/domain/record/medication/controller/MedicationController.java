@@ -16,11 +16,10 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "복용약", description = "내 복용약 등록/수정/삭제")
+@Tag(name = "복용약", description = "내 복용약 등록/삭제 (MO-DRUG-020, 030)")
 @RestController
 @RequiredArgsConstructor
 public class MedicationController {
@@ -42,20 +41,6 @@ public class MedicationController {
         @RequestBody @Valid MemberMedicationRequest request
     ) {
         return ApiResponse.success(SuccessStatus.CREATED, medicationService.addMyMedication(memberId, request));
-    }
-
-    @Operation(
-        summary = "내 복용약 수정",
-        description = "약 종류/제품명 전체를 교체한다. 이미 남긴 복약 기록에도 바뀐 정보로 표시된다. "
-            + "본인 약만 수정 가능(그 외 404 MEDICATION_4040)."
-    )
-    @PutMapping("/api/members/me/medications/{memberMedicationId}")
-    public ResponseEntity<ApiResponse<MemberMedicationResponse>> updateMyMedication(
-        @AuthenticationPrincipal Long memberId,
-        @PathVariable Long memberMedicationId,
-        @RequestBody @Valid MemberMedicationRequest request
-    ) {
-        return ApiResponse.success(medicationService.updateMyMedication(memberId, memberMedicationId, request));
     }
 
     @Operation(
