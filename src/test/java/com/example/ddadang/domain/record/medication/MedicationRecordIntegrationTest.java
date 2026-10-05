@@ -16,30 +16,41 @@ import org.springframework.http.MediaType;
 class MedicationRecordIntegrationTest extends IntegrationTest {
 
     @Test
-    void 내_복용약을_등록_수정_삭제한다() throws Exception {
+    void 내_복용약을_등록하고_삭제한다() throws Exception {
         Member me = createMember();
         Integer id = addMyMedication(me, "DIABETES", "\"다이아벡스정\"");
         addMyMedication(me, "SUPPLEMENT", "\"  \"");
+        addMyMedication(me, "DIABETES", "\"다이아벡스정\"");
 
         mockMvc.perform(get("/api/members/me/medications").header("Authorization", bearer(me)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.result.length()").value(2))
+            .andExpect(jsonPath("$.result.length()").value(3))
             .andExpect(jsonPath("$.result[0].productName").value("다이아벡스정"))
             .andExpect(jsonPath("$.result[1].category").value("SUPPLEMENT"))
             .andExpect(jsonPath("$.result[1].productName").doesNotExist());
 
-        mockMvc.perform(put("/api/members/me/medications/{id}", id)
-                .header("Authorization", bearer(me))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"category\":\"HYPERTENSION\",\"productName\":\"노바스크정\"}"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.result.category").value("HYPERTENSION"))
-            .andExpect(jsonPath("$.result.productName").value("노바스크정"));
-
         mockMvc.perform(delete("/api/members/me/medications/{id}", id).header("Authorization", bearer(me)))
             .andExpect(status().isOk());
         mockMvc.perform(get("/api/members/me/medications").header("Authorization", bearer(me)))
-            .andExpect(jsonPath("$.result.length()").value(1));
+            .andExpect(jsonPath("$.result.length()").value(2));
+    }
+
+    @Test
+    void 복약_기록의_제품명은_기록마다_따로_저장된다() throws Exception {
+        Member me = createMember();
+        Integer diabetes = addMyMedication(me, "DIABETES", "\"다이아벡스정\"");
+        Integer recordId = record(me, diabetes, "2026-10-05T08:30:00", "자누비아정", null);
+
+        mockMvc.perform(get("/api/medication-records/{id}", recordId).header("Authorization", bearer(me)))
+            .andExpect(jsonPath("$.result.productName").value("자누비아정"));
+        mockMvc.perform(get("/api/members/me/medications").header("Authorization", bearer(me)))
+            .andExpect(jsonPath("$.result[0].productName").value("다이아벡스정"));
+
+        mockMvc.perform(post("/api/medication-records")
+                .header("Authorization", bearer(me))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(recordJson(diabetes, "2026-10-05T20:00:00", "가".repeat(21), null)))
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -48,7 +59,7 @@ class MedicationRecordIntegrationTest extends IntegrationTest {
         Integer diabetes = addMyMedication(me, "DIABETES", "\"다이아벡스정\"");
         Integer supplement = addMyMedication(me, "SUPPLEMENT", "null");
         record(me, supplement, "2026-10-05T21:00:00", "자기 전");
-        record(me, diabetes, "2026-10-05T08:30:00", null);
+        record(me, diabetes, "2026-10-05T08:30:00", "다이아벡스정", null);
         record(me, diabetes, "2026-10-04T08:30:00", null);
 
         mockMvc.perform(get("/api/medication-records").param("date", "2026-10-05").header("Authorization", bearer(me)))
@@ -65,7 +76,7 @@ class MedicationRecordIntegrationTest extends IntegrationTest {
         Member me = createMember();
         Integer deleted = addMyMedication(me, "DIABETES", "\"다이아벡스정\"");
         Integer active = addMyMedication(me, "HYPERTENSION", "null");
-        Integer recordId = record(me, deleted, "2026-10-05T08:30:00", null);
+        Integer recordId = record(me, deleted, "2026-10-05T08:30:00", "다이아벡스정", null);
         mockMvc.perform(delete("/api/members/me/medications/{id}", deleted).header("Authorization", bearer(me)));
 
         mockMvc.perform(get("/api/medication-records/{id}", recordId).header("Authorization", bearer(me)))
@@ -142,17 +153,30 @@ class MedicationRecordIntegrationTest extends IntegrationTest {
     }
 
     private Integer record(Member member, Integer memberMedicationId, String takenAt, String memo) throws Exception {
+        return record(member, memberMedicationId, takenAt, null, memo);
+    }
+
+    private Integer record(Member member, Integer memberMedicationId, String takenAt, String productName, String memo)
+        throws Exception {
         String body = mockMvc.perform(post("/api/medication-records")
                 .header("Authorization", bearer(member))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(recordJson(memberMedicationId, takenAt, memo)))
+                .content(recordJson(memberMedicationId, takenAt, productName, memo)))
             .andExpect(status().isCreated())
             .andReturn().getResponse().getContentAsString();
         return JsonPath.read(body, "$.result.medicationRecordId");
     }
 
     private String recordJson(Integer memberMedicationId, String takenAt, String memo) {
-        String memoJson = memo == null ? "null" : "\"" + memo + "\"";
-        return "{\"memberMedicationId\":%d,\"takenAt\":\"%s\",\"memo\":%s}".formatted(memberMedicationId, takenAt, memoJson);
+        return recordJson(memberMedicationId, takenAt, null, memo);
+    }
+
+    private String recordJson(Integer memberMedicationId, String takenAt, String productName, String memo) {
+        return "{\"memberMedicationId\":%d,\"takenAt\":\"%s\",\"productName\":%s,\"memo\":%s}"
+            .formatted(memberMedicationId, takenAt, json(productName), json(memo));
+    }
+
+    private String json(String value) {
+        return value == null ? "null" : "\"" + value + "\"";
     }
 }
