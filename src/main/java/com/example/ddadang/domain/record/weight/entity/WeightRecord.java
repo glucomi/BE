@@ -8,6 +8,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -18,7 +19,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "weight_record")
+@Table(
+    name = "weight_record",
+    indexes = @Index(name = "idx_weight_record_member_measured_at", columnList = "member_id, measured_at")
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WeightRecord extends BaseTimeEntity {
@@ -41,5 +45,14 @@ public class WeightRecord extends BaseTimeEntity {
         this.member = member;
         this.measuredAt = measuredAt;
         this.weightKg = weightKg;
+    }
+
+    public void update(LocalDateTime measuredAt, BigDecimal weightKg) {
+        this.measuredAt = measuredAt;
+        this.weightKg = weightKg;
+    }
+
+    public boolean isOwnedBy(Long memberId) {
+        return member.getId().equals(memberId);
     }
 }
