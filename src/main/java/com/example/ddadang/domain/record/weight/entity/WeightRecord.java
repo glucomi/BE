@@ -18,6 +18,10 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * 체중 기록. 화면(MO-WEIGHT-010)은 날짜만 입력하고 같은 날짜에 기록이 있으면 갱신하므로 하루 1건으로 관리한다.
+ * measured_at에는 해당 날짜 00:00을 저장한다(온보딩 기록 포함).
+ */
 @Entity
 @Table(
     name = "weight_record",
@@ -47,12 +51,7 @@ public class WeightRecord extends BaseTimeEntity {
         this.weightKg = weightKg;
     }
 
-    public void update(LocalDateTime measuredAt, BigDecimal weightKg) {
-        this.measuredAt = measuredAt;
+    public void changeWeight(BigDecimal weightKg) {
         this.weightKg = weightKg;
-    }
-
-    public boolean isOwnedBy(Long memberId) {
-        return member.getId().equals(memberId);
     }
 }
