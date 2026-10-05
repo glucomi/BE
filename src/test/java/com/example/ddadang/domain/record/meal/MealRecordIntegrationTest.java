@@ -1,7 +1,9 @@
 package com.example.ddadang.domain.record.meal;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -103,14 +105,78 @@ class MealRecordIntegrationTest extends IntegrationTest {
             .andExpect(jsonPath("$.result.totalElements").value(0));
     }
 
-    private void record(Member member, String eatenAt, Food food) throws Exception {
-        mockMvc.perform(post("/api/meal-records")
+    @Test
+    void 식사_기록을_수정하면_일시_메모_메뉴가_교체되고_영양성분을_다시_환산한다() throws Exception {
+        Member me = createMember();
+        Food rice = food("흰쌀밥", "210", FoodUnit.G, "315", "69.7");
+        Food banana = food("바나나", "100", FoodUnit.G, "93", "22");
+        Integer mealRecordId = record(me, "2026-09-28T08:00:00", rice);
+
+        mockMvc.perform(put("/api/meal-records/{id}", mealRecordId)
+                .header("Authorization", bearer(me))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"eatenAt":"2026-09-28T09:00:00","memo":" 아침 ",
+                     "items":[{"foodId":%d,"amount":50,"unit":"G"}]}
+                    """.formatted(banana.getId())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.result.eatenAt").value("2026-09-28T09:00:00"))
+            .andExpect(jsonPath("$.result.memo").value("아침"))
+            .andExpect(jsonPath("$.result.items.length()").value(1))
+            .andExpect(jsonPath("$.result.items[0].mealRecordItemId").isNumber())
+            .andExpect(jsonPath("$.result.items[0].name").value("바나나"))
+            .andExpect(jsonPath("$.result.total.kcal").value(46.5));
+
+        mockMvc.perform(get("/api/meal-records/{id}", mealRecordId).header("Authorization", bearer(me)))
+            .andExpect(jsonPath("$.result.items.length()").value(1))
+            .andExpect(jsonPath("$.result.items[0].name").value("바나나"));
+    }
+
+    @Test
+    void 다른_회원의_식사_기록은_수정_삭제할_수_없다() throws Exception {
+        Member me = createMember();
+        Food rice = food("흰쌀밥", "210", FoodUnit.G, "315", "69.7");
+        Integer mealRecordId = record(me, "2026-09-28T08:00:00", rice);
+        String other = bearer(createMember());
+
+        mockMvc.perform(put("/api/meal-records/{id}", mealRecordId)
+                .header("Authorization", other)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"eatenAt":"2026-09-28T09:00:00","items":[{"foodId":%d,"amount":1,"unit":"SERVING"}]}
+                    """.formatted(rice.getId())))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("MEAL_4041"));
+        mockMvc.perform(delete("/api/meal-records/{id}", mealRecordId).header("Authorization", other))
+            .andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/meal-records/{id}", mealRecordId).header("Authorization", bearer(me)))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    void 식사_기록을_삭제하면_조회되지_않는다() throws Exception {
+        Member me = createMember();
+        Food rice = food("흰쌀밥", "210", FoodUnit.G, "315", "69.7");
+        Integer mealRecordId = record(me, "2026-09-28T08:00:00", rice);
+
+        mockMvc.perform(delete("/api/meal-records/{id}", mealRecordId).header("Authorization", bearer(me)))
+            .andExpect(status().isOk());
+        mockMvc.perform(get("/api/meal-records/{id}", mealRecordId).header("Authorization", bearer(me)))
+            .andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/foods/recent").header("Authorization", bearer(me)))
+            .andExpect(jsonPath("$.result.totalElements").value(0));
+    }
+
+    private Integer record(Member member, String eatenAt, Food food) throws Exception {
+        String body = mockMvc.perform(post("/api/meal-records")
                 .header("Authorization", bearer(member))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {"eatenAt":"%s","items":[{"foodId":%d,"amount":1,"unit":"SERVING"}]}
                     """.formatted(eatenAt, food.getId())))
-            .andExpect(status().isCreated());
+            .andExpect(status().isCreated())
+            .andReturn().getResponse().getContentAsString();
+        return JsonPath.read(body, "$.result.mealRecordId");
     }
 
     private Food food(String name, String amount, FoodUnit unit, String kcal, String carb) {
