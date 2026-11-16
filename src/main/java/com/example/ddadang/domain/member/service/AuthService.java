@@ -44,6 +44,14 @@ public class AuthService {
         return LoginResponse.of(member, issueTokens(member.getId()), existing.isEmpty());
     }
 
+    /**
+     * 웹 카카오 로그인: 인가 코드를 카카오 access token으로 교환한 뒤 앱 로그인과 같은 흐름을 탄다.
+     */
+    @Transactional
+    public LoginResponse loginWithKakaoCode(String code, String redirectUri) {
+        return loginWithKakao(kakaoApiClient.exchangeCode(code, redirectUri).accessToken());
+    }
+
     @Transactional
     public TokenResponse reissue(String refreshToken) {
         Long memberId;
