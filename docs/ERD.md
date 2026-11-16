@@ -238,8 +238,12 @@ erDiagram
 
     exercise {
         bigint id PK
+        varchar code UK "운동 DB 원본코드"
+        varchar category "분류"
         varchar name
-        decimal met "kcal 계산용"
+        varchar name_en "영문명(원문)"
+        varchar name_ja "일문명(원문)"
+        decimal met "kcal = MET × 체중(kg) × 시간(h)"
         boolean popular
     }
     exercise_record {

@@ -1,0 +1,160 @@
+﻿원본코드,분류,운동명(한글),MET,"30분 기준 소모(60kg, kcal)",영문명(원문),일문명(원문)
+02050,근력/웨이트,웨이트 트레이닝(프리웨이트·보디빌딩),6,180,"Resistance (weight lifting ‐ free weight, nautilus or universal‐type), power lifting or body building, vigorous effort",ボディービルディング、きつい労力
+02052,근력/웨이트,웨이트(스쿼트·데드리프트),5,150,"Resistance (weight) training, squats, deadlift, slow or explosive effort",レジスタンス(ウェイト)トレーニング：スクワット、ゆっくりあるいは瞬発的な努力で
+02055,근력/웨이트,저항운동(서킷·슈퍼세트),5.8,174,"Resistance Training , circuit, reciprocol supersets, peripheral hear action training",レジスタンス(ウェイト)トレーニング：サーキット、レシプロカル、抹消心肺機能(PHA)トレーニング
+02056,근력/웨이트,맨몸 저항운동(스쿼트·런지·푸시업 등),3,90,"Body weight restistance exercises (e.g., squat, lunge, push‐up, crunch), general",自重トレーニング：スクワット、ランジ、腕立て伏せ、クランチなど、全般
+02057,근력/웨이트,맨몸 저항운동(고강도),6.5,195,"Body weight restistance exercises (e.g., squat, lunge, push‐up, crunch), high intensity",自重トレーニング：スクワット、ランジ、腕立て伏せ、クランチなど、高強度
+02058,근력/웨이트,케틀벨 스윙,9.8,294,Kettle bell swings,ケトルベルスウィング
+02022,근력/웨이트,맨몸운동(푸시업·싯업·풀업·런지),3.8,114,"Calisthenics (e.g., pushups, sit ups, pull‐ups, lunges), moderate effort",健康体操(例：腕立て伏せ、腹筋運動、懸垂、ランジ)：ほどほどの労力
+02024,근력/웨이트,"맨몸운동(크런치·플랭크, 가벼움)",2.8,84,"Calisthenics (e.g., curl ups, abdominal crunches, plank), light effort",健康体操(例：カールアップ、アブドミナルクランチ、プランク)：楽な労力
+02030,근력/웨이트,맨몸운동(일반),3.5,105,"Calisthenics, light or moderate effort, general (e.g., back exercises), going up & down from floor (Taylor Code 150)",健康体操：楽からほどほどの労力、全般(例：背筋を使用した運動)、階段の上り下り
+02032,근력/웨이트,서킷 트레이닝(맨몸),6,180,"Circuit training, body weight exercises",サーキットトレーニング：自重トレーニング
+02035,근력/웨이트,서킷 트레이닝(보통),5,150,"Circuit training, moderate effort",サーキットトレーニング：ほどほどの労力
+02040,근력/웨이트,"서킷 트레이닝(케틀벨 포함, 격렬)",7.5,225,"Circuit training, including kettlebells, some aerobic movement with minimal rest, general, vigorous intensity",サーキットトレーニング：ケトルベルを含む、短時間の休息を含む有酸素運動、全般、きつい強度
+02060,근력/웨이트,헬스클럽 운동(일반),5.5,165,"Health club exercise, general (Taylor Code 160)",フィットネスクラブでの運動：全般
+02064,근력/웨이트,홈 트레이닝(일반),3.8,114,"Home exercise, general",家庭での運動：全般
+02115,근력/웨이트,상체 운동(암 에르고미터),2.8,84,"Upper body exercise, arm ergometer, general, light",上肢の運動：腕エルゴメータ(ハンドエルゴメータ)、全般、楽な労力
+02101,스트레칭/유연,스트레칭,2.3,69,"Stretching, mild",ストレッチ：ゆったり
+02150,스트레칭/유연,요가(하타),2.3,69,"Yoga, Hatha",ヨガ：ハタ
+02155,스트레칭/유연,요가(핫),3,90,"Yoga, Hot",ヨガ：ホット
+02160,스트레칭/유연,요가(파워),4,120,"Yoga, Power",ヨガ：パワー
+02105,스트레칭/유연,필라테스,2.8,84,"Pilates, general",ピラティス：全般
+02112,스트레칭/유연,짐볼(피트볼) 운동,2.8,84,"Therapeutic exercise ball, Fitball exercise",ボールを用いた運動療法：バランスボールエクササイズ
+02048,유산소 기구,일립티컬,5,150,"Elliptical trainer, moderate effort",エリプティカルトレーナー(ペダルを踏むと足が楕円形を描くように作られている運動器具)：ほどほどの労力
+02065,유산소 기구,스텝밀(계단 오르기 머신),9.3,279,"Stair treadmill ergometer, general",ステアートレッドミルエルゴメータ(階段昇りの運動)：全般
+02068,유산소 기구,줄넘기,11,330,"Rope skipping exercise, general",なわとび：全般
+02070,유산소 기구,로잉머신,7.3,219,"Rowing, stationary ergometer, general, vigorous effort",ボート漕ぎ：ローイングエルゴメータ、全般、きつい労力
+02000,유산소 기구,에어로빅,7.3,219,"Aerobic, general",有酸素運動：全般
+02004,유산소 기구,벤치 스텝 클래스,7.8,234,"Bench step class, general",ベンチステップ教室：全般
+02210,유산소 기구,고강도 인터벌(HIIT),7,210,"High intensity interval exercise, moderate effort",高強度インターバルトレーニング：ほどほどの労力
+02120,유산소 기구,아쿠아 에어로빅,5.3,159,"Water aerobics, water calisthenics, water exercise",アクアビクス：水中での健康体操、水中運動
+02310,유산소 기구,줌바,6.5,195,"Zumba, group class",ズンバ：運動教室
+01200,유산소 기구,실내자전거,6.8,204,"Bicycling, stationary, general",自転車をこぐ：自転車エルゴメータ、全般
+01270,유산소 기구,스피닝(RPM 클래스),9,270,"Bicycling, stationary, RPM/Spin bike class",自転車をこぐ：自転車エルゴメータ、RPM/スピンバイククラス
+02230,유산소 기구,훌라후프,5.8,174,Hooping (formerly known as hula® hooping),フラフープをする
+17034,걷기/러닝,오르막 걷기,5.3,159,"Climbing hills, no load, 1 to 5% grade, moderate‐to‐brisk pace",山を登る：荷物なし、傾斜1 - 5%、ほどほどからはやいペース
+17080,걷기/러닝,하이킹,6,180,"Hiking, cross country (Taylor Code 040)",ハイキング：クロスカントリー
+17131,걷기/러닝,계단 오르기,6.8,204,"Stair climbing, general",階段を上る：全般
+17138,걷기/러닝,계단 오르내리기,7.5,225,"Stair climbing, ascending and descending stairs",階段を上る：上る、下りる
+17310,걷기/러닝,노르딕워킹,8.8,264,"Walking, for exercise, with ski poles, Nordic walking, uphill, moderate pace",歩行：運動目的、スキーポールを使って、ノルディックウォーキング、上り坂、ほどほどのペース
+17088,걷기/러닝,행진,4.5,135,"Marching, moderate speed, military, no pack",行進する：ほどほどの速さ、軍隊、荷物なし
+17140,걷기/러닝,목발 짚고 걷기,4.5,135,"Using crutches, level ground, general",松葉杖を使う：平らな地面、全般
+17100,걷기/러닝,육아(유모차·아이와 걷기),3.8,114,"Pushing or pulling stroller with child or walking with children, 2.5 to 3.1 mph",ベビーカーを押しながら歩く、または子どもと一緒に歩く：4.1-5.0km/時
+12200,걷기/러닝,마라톤,13.3,399,"Running, marathon",ランニング：マラソン
+12140,걷기/러닝,크로스컨트리 달리기,9.3,279,"Running, cross country",ランニング：クロスカントリー
+17152,걷기/러닝,"걷기(느리게, 3.2~3.9km/h)",2.8,84,"Walking, 2.0 to 2.4 mph, level, slow pace, firm surface",歩行：3.2 - 3.9 km/時、ゆっくりなペース、平らで固い地面
+17190,걷기/러닝,"걷기(보통, 4.5~5.5km/h)",3.8,114,"Walking, 2.8 to 3.4 mph, level, moderate pace, firm surface",歩行：4.5 - 5.5 km/時、ほどほどのペース、平らで固い地面
+17200,걷기/러닝,"걷기(빠르게, 5.6~6.3km/h)",4.8,144,"Walking, 3.5 to 3.9 mph, level, brisk, firm surface, walking for exercise",歩行：5.7 - 6.3 km/時、平らで固い地面、速い、運動目的で歩く
+12020,걷기/러닝,달리기(느리게/조깅),7.5,225,"Jogging, general, self‐selected pace",ジョギング：全般、自分で選んだペースで
+12050,걷기/러닝,"달리기(보통, 9.7~10.1km/h)",9.3,279,"Running, 6‐6.3 mph (10 min/mile)",ランニング：9.7-10.2km/時 (161-169m/分)
+12110,걷기/러닝,"달리기(빠르게, 14.5km/h)",13,390,"Running, 9 mph (6.5 min/mile)",ランニング：14.6km/時 (241m/分)
+01010,자전거,"자전거(가볍게, 16km/h 미만)",4,120,"Bicycling, <10 mph, leisure, to work or for pleasure (Taylor Code 115)",自転車をこぐ：16.2km/時未満、レジャー、通勤、娯楽
+01014,자전거,"자전거(보통, 일반)",7,210,"Bicycling, general",自転車をこぐ：全般
+01040,자전거,"자전거(빠르게, 22~26km/h)",10,300,"Bicycling, 14‐15.9 mph, racing or leisure, fast, vigorous effort",自転車をこぐ：22.7-25.8km/時、レース、レジャー、速い、きつい労力
+15120,격투/무술,복싱(스파링),7.8,234,"Boxing, sparring",ボクシング：スパーリング
+15110,격투/무술,복싱(샌드백),5.8,174,"Boxing, punching bag",ボクシング：サンドバッグを叩く
+15450,격투/무술,킥복싱,7,210,Kickball,キックベースボール
+15430,격투/무술,무술(가라테·태권도·주짓수 등),10.3,309,"Martial Arts, different types, moderate pace (e.g., judo, jujitsu, karate, kick boxing, tae kwan do, tai‐bo, Muay",エタイ)
+15433,격투/무술,유도,11.3,339,Judo,柔道
+15730,격투/무술,레슬링,6,180,"Wrestling, competitive (one match = 5 minutes)",レスリング：試合(1試合=5分)
+15055,구기/스포츠,농구,7.5,225,"Basketball, general",バスケットボール：全般
+15710,구기/스포츠,배구,4,120,Volleyball (Taylor Code 400),バレーボール
+15725,구기/스포츠,비치발리볼,8,240,"Volleyball, beach, in sand",バレーボール：ビーチ、砂場で
+15620,구기/스포츠,야구/소프트볼,5,150,"Softball or baseball, fast or slow pitch, general, moderate effort (Taylor Code 440)",ソフトボール、または野球：速い、あるいは遅い投球、全般、ほどほどの労力
+15675,구기/스포츠,테니스,6.8,204,"Tennis, general, moderate effort",テニス：全般、ほどほどの労力
+15030,구기/스포츠,배드민턴,5.5,165,"Badminton, social singles and doubles, general",バドミントン：試合以外でのシングルとダブルス、全般
+15660,구기/스포츠,탁구,4,120,"Table tennis, ping pong (Taylor Code 410)",卓球
+15652,구기/스포츠,스쿼시,7.3,219,"Squash, general",スカッシュ：全般
+15530,구기/스포츠,라켓볼,7,210,"Racquetball, general (Taylor Code 470)",ラケットボール：全般
+15500,구기/스포츠,패들볼,6,180,"Paddleball, casual, general (Taylor Code 460)",パドルボール：形式ばらない、全般
+15255,구기/스포츠,골프,4.5,135,"Golf, general",ゴルフ：全般
+15210,구기/스포츠,미식축구,8,240,"Football, competitive",アメリカンフットボール：試合
+15560,구기/스포츠,럭비,8.3,249,"Rugby, union, team, competitive",ラグビー：ユニオン、チーム練習、試合
+15330,구기/스포츠,핸드볼,8,240,"Handball, team",ハンドボール：チーム練習
+15460,구기/스포츠,라크로스,8,240,Lacrosse,ラクロス
+15350,구기/스포츠,하키(필드),7.8,234,"Hockey, field",ホッケー：フィールド
+15360,구기/스포츠,아이스하키,8,240,"Hockey, ice, general",ホッケー：氷上、全般
+15240,구기/스포츠,프리스비,3,90,"Frisbee playing, general",フリスビー：全般
+15250,구기/스포츠,얼티밋 프리스비,8,240,"Frisbee, ultimate",フリスビー：アルティメット
+15092,구기/스포츠,볼링,3.8,114,"Bowling, indoor, bowling alley",ボウリング：屋内、ボウリング場で
+15080,구기/스포츠,당구,2.5,75,Billiards,ビリヤード
+15180,구기/스포츠,다트,2.5,75,"Darts, wall or lawn",ダーツ：ウォールダーツ、ローンダーツ
+15150,구기/스포츠,크리켓,4.8,144,"Cricket, batting, bowling, fielding",クリケット：バッティング、ボウリング、フィールディング
+15160,구기/스포츠,크로켓,3.3,99,Croquet,クロッケー
+15170,구기/스포츠,컬링,4,120,Curling,カーリング
+15570,구기/스포츠,셔플보드,3,90,Shuffleboard,シャッフルボード(長い棒で円盤を突いて点数を書いた枠の中に入れるゲーム、主に船の甲板でする)
+15200,구기/스포츠,펜싱,6,180,"Fencing, general",フェンシング：全般
+15010,구기/스포츠,양궁,4.3,129,Archery (non‐hunting),アーチェリー：狩猟以外
+15510,구기/스포츠,폴로,8,240,"Polo, on horseback",ポロ(馬に乗りながら行うホッケー)：馬の背に乗って
+15370,구기/스포츠,승마,5.5,165,"Horseback riding, general",乗馬：全般
+15544,구기/스포츠,로데오스포츠,5.5,165,"Rodeo sports, general, moderate effort",ロデオスポーツ：全般、ほどほどの労力
+15138,구기/스포츠,치어리딩,6,180,"Cheerleading, gymnastic moves, competitive",チアリーディング：体操的な動き、競技
+15300,구기/스포츠,체조,3.8,114,"Gymnastics, general",体操：全般
+15700,구기/스포츠,트램펄린,6.3,189,"Trampoline, recreational",トランポリン：レクリエーション
+15610,구기/스포츠,축구,7,210,"Soccer, casual, general (Taylor Code 540)",サッカー：形式ばらない、全般
+15195,구기/스포츠,풋살,7.8,234,Futsal,フットサル
+15533,익스트림/기타,클라이밍,8,240,"Rock or mountain climbing (Taylor Code 060), (formerly code 17120)",ロッククライミング、または山登り
+15600,익스트림/기타,스카이다이빙/번지점프,3.5,105,"Skydiving, basejumping, bunge jumping",スカイダイビング、ベースジャンピング、バンジージャンプ
+15340,익스트림/기타,행글라이딩,3.5,105,Hang gliding,ハンググライダー
+15503,익스트림/기타,패러글라이딩,1.8,54,"paragliding, moderate altitude",パラグライダー：ほどほどの高さ
+15580,익스트림/기타,스케이트보드,5,150,"Skateboarding, general, moderate effort",スケートボード：全般、ほどほどの労力
+15590,익스트림/기타,롤러스케이팅,7,210,"Skating, roller (Taylor Code 360)",スケート：ローラースケート
+15475,익스트림/기타,모터사이클 레이싱,5.3,159,"Motorcycle racing, Supormoto racing",オートバイレース：スーパーモト
+15192,익스트림/기타,카레이싱,8.5,255,"Auto racing, open wheel",オートレーシング：オープンホイールカー(フォーミュラカー)
+02280,익스트림/기타,VR 피트니스 게임,8.3,249,"Virtual Reality Fitness, Supernatural™ “Flow”, “Boxing"" vigorous intensity",VRフィットネスアプリ（スーパーナチュラル）：フロー、ボクシング、きつい労力
+18310,수상,수영(일반),6,180,"Swimming, leisurely, not lap swimming, general",水泳：のんびりと泳ぐ、ラップスイミングではない、全般
+18230,수상,"수영(자유형, 빠르게)",9.8,294,"Swimming laps, freestyle, fast, vigorous effort",往復水泳：自由形、速い、きつい労力
+18368,수상,수중 걷기,4.8,144,"Water walking, moderate effort, moderate pace",水中歩行：ほどほどの労力、ほどほどのペース
+18355,수상,아쿠아 에어로빅(수상),5.5,165,"Water aerobics, water calisthenics, general",アクアビクス：水中体操、全般
+18220,수상,서핑,3,90,"Surfing, body or board, general",サーフィン：ボディサーフィン、ボードサーフィン、全般
+18224,수상,패들보드(SUP),6.5,195,"Stand up paddle boarding, general",スタンドアップパドルボード（立ち漕ぎボード）：全般
+18150,수상,수상스키,6,180,"Skiing, water or wake boarding (Taylor Code 220)",スキー：水上スキー、ウェークボード(水上スノーボード)
+18380,수상,윈드서핑,5,150,"Windsurfing, not pumping for speed",ウィンドサーフィン：パンピング(セイルを動かすことによってボードに推進力を加える技術)をしない
+18070,수상,카누,3.5,105,"Canoeing, rowing, for pleasure, general (Taylor Code 250)",カヌー、ボートを漕ぐ：趣味、全般
+18100,수상,카약,5,150,"Kayaking, moderate effort",カヤック：ほどほどの労力
+18080,수상,조정(경기),12,360,"Canoeing or rowing, in competition, crew or sculling (Taylor Code 260)",カヌー、ボートを漕ぐ：競技、競漕、スカル
+18360,수상,수구,10,300,Water polo,水球
+18210,수상,스노클링,5,150,Snorkeling (Taylor Code 320),シュノーケリング
+18200,수상,스쿠버다이빙,7,210,"Skindiving, scuba diving, general (Taylor Code 310)",スキンダイビング、スキューバダイビング：全般
+18190,수상,프리다이빙(스킨다이빙),11.8,354,"Skindiving, moderate",スキンダイビング：ほどほどの速さ
+18120,수상,세일링/윈드서핑(일반),3,90,"Sailing, boat and board sailing, windsurfing, ice sailing, general (Taylor Code 235)",セーリング：ボートやボードセーリング、ウィンドサーフィン、アイスセーリング、全般
+19075,동계,스키(일반),7,210,"Skiing, general",スキー：全般
+19201,동계,스노보드,7.5,225,"snowboarding, recreational, moderate pace, mountain",スノーモービル：運転する、レクリエーショナル、ほどほどのペース、山
+19090,동계,크로스컨트리 스키,8.5,255,"Skiing, cross country, 4.0‐4.9 mph, moderate speed and effort, general",スキー：クロスカントリースキー、6.5-7.9km/時、ほどほどの速さ、ほどほどの労力、全般
+19030,동계,아이스스케이팅,7,210,"Skating, ice, general (Taylor Code 360)",スケート：氷上、全般
+19180,동계,썰매·봅슬레이·루지,7,210,"Sledding, tobogganing, bobsledding, luge (Taylor Code 370)",そりで滑る：トボガニング(小型のそり)、ボブスレー、リュージュ
+19200,동계,스노우모빌,3.8,114,"Snowmobiling, driving, moderate pace, flat land",スノーモービル：運転する、ほどほどの速さ、平らな雪面
+03010,댄스,발레·모던·재즈(클래스),5,150,"Ballet, modern, or jazz general, rehearsal or class",バレエ：モダン、ジャズ、全般、リハーサルや教室
+03078,댄스,재즈댄스,4.5,135,"Jazz dancing, general",ジャズダンス：全般
+03042,댄스,소셜댄스(볼룸 레크리에이션),6,180,"Ballroom Dance, Recreational (Waltz, Foxtrot, Cha‐cha, Swing)",社交ダンス：レクリエーション（ワルツ、フォックストロット、チャチャ、スウィング）
+03038,댄스,댄스스포츠(경기),11.3,339,"Ballroom dancing, competitive, general",社交ダンス：競技、全般
+03075,댄스,플라멩코,8.5,255,Flamenco dance,フラメンコダンス
+03070,댄스,컨템포러리 댄스,3.8,114,"Contemporary dancing, general",コンテンポラリーダンス：全般
+02108,댄스,폴댄스(운동 클래스),4.5,135,"Pole dancing, exercise class",ポールダンス、運動教室
+04001,낚시·사냥,낚시(일반),3.5,105,"Fishing, general",釣り：全般
+04040,낚시·사냥,"낚시(강가, 서서)",3.5,105,"Fishing from river bank, standing (Taylor Code 660)",川岸での釣り：立位
+04030,낚시·사냥,"낚시(보트, 앉아서)",2,60,"Fishing from boat or canoe, sitting",ボートやカヌーでの釣り：座位
+04060,낚시·사냥,얼음낚시,2,60,"Fishing, ice, sitting",釣り：氷上、座位
+04100,낚시·사냥,사냥(일반),5,150,"Hunting, general",狩猟：全般
+04080,낚시·사냥,"사냥(대형, 도보)",6,180,"Hunting, deer, elk, large game (Taylor Code 170)",狩猟：シカ、ワピチ(アメリカのアカシカ)、大きな獲物
+05010,가사,청소(쓸기/닦기),3.3,99,"Cleaning, sweeping carpet or floors, general",掃除：カーペットやフロアの掃き掃除、全般
+05043,가사,진공청소기 청소,3,90,"Vacuuming, general, moderate effort",掃除機掛け：全般、ほどほどの労力
+05022,가사,창문 청소,3.3,99,"Cleaning windows, washing windows, general",窓掃除：窓掃除、全般
+05049,가사,요리/음식 준비,3.5,105,"Cooking or food preparation, moderate effort",調理や食事の準備：ほどほどの労力
+05041,가사,설거지,2,60,"Wash dishes, standing or in general (not broken into stand/walk components)",皿洗い：立位または全般(立位と歩行に分類しない場合)
+05090,가사,빨래(널기/개기),2.3,69,"Laundry, fold or hang clothes, put clothes in washer or dryer, packing suitcase, washing clothes by hand, implied",含む、楽な労力
+05070,가사,다림질,1.8,54,Ironing,アイロンがけ
+05100,가사,침구 정리/교체,3,90,"Making bed, changing linens",ベッドメイク：リネンを交換する
+05060,가사,장보기,3.3,99,Food shopping with or without a grocery cart; carrying a 10 lb bag; standing or walking,食料品の買い物（カート使用の有無を問わない）：4.5kg程度のバッグを運ぶ、立位や歩行を伴う
+05054,가사,장바구니 나르기,3.5,105,"carrying groceries, on level ground, walking",食料品を運ぶ：水平、歩行
+05026,가사,"집안일(복합, 보통)",3.3,99,"Multiple household tasks all at once, moderate effort",いろいろな家事を同時にこなす：ほどほどの労力
+05020,가사,세차/대청소,3.5,105,"cleaning heavy or major (e.g., wash car, clean garage), moderate effort",掃除：重いまたは大きいものの掃除(例：洗車、車庫掃除)、ほどほどの労力
+05053,가사,애완동물 먹이 주기,2.5,75,Feeding household animals,ペットへの餌やり
+10040,음악연주,드럼,3.8,114,"Drums, sitting",ドラムの演奏：座位
+10125,음악연주,"기타(록밴드, 서서)",3,90,"Guitar, rock and roll band, standing",ギターの演奏：ロックンロールバンド、立位
+10120,음악연주,"기타(클래식/포크, 앉아서)",2,60,"Guitar, classical, folk, sitting",ギターの演奏：クラッシックギター、フォークギター、座位
+10070,음악연주,피아노,2.3,69,"Piano, sitting",ピアノの演奏：座位
+10090,음악연주,트럼펫,2.5,75,"Trumpet, standing",トランペットの演奏：立位
+10100,음악연주,바이올린,2.5,75,"Violin, sitting",バイオリンの演奏：座位
+10131,음악연주,마칭밴드(연주하며 행진),5.5,165,"Marching band, playing an instrument, walking, brisk pace, general",マーチングバンド：楽器演奏、歩行、速いペース、全般
+10074,음악연주,악기 연주(일반),2,60,"Playing musical instruments, general",楽器の演奏：全般
