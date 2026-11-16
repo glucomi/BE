@@ -33,3 +33,5 @@ cors:
 
 kakao:
   api-base-url: http://localhost:0
+  auth-base-url: http://localhost:0
+  client-id: test-kakao-rest-api-key

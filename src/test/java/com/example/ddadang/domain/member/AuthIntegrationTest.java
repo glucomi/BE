@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.ddadang.domain.member.client.KakaoTokenResponse;
 import com.example.ddadang.domain.member.client.KakaoUserResponse;
 import com.example.ddadang.domain.member.client.KakaoUserResponse.KakaoAccount;
 import com.example.ddadang.domain.member.client.KakaoUserResponse.Profile;
@@ -50,6 +51,53 @@ class AuthIntegrationTest extends IntegrationTest {
                 .content("{\"kakaoAccessToken\":\"bad\"}"))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.code").value("AUTH_4010"));
+    }
+
+    @Test
+    void 웹_카카오_로그인은_인가_코드를_토큰으로_교환해_로그인한다() throws Exception {
+        given(kakaoApiClient.exchangeCode("auth-code", "https://ddadang.vercel.app/auth/kakao/callback"))
+            .willReturn(new KakaoTokenResponse("kakao-token-from-code"));
+        given(kakaoApiClient.getUser("kakao-token-from-code"))
+            .willReturn(new KakaoUserResponse(1003L, new KakaoAccount(new Profile("웹회원"))));
+        String body = "{\"code\":\"auth-code\",\"redirectUri\":\"https://ddadang.vercel.app/auth/kakao/callback\"}";
+
+        mockMvc.perform(post("/api/auth/kakao/code").contentType(MediaType.APPLICATION_JSON).content(body))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.result.isNewMember").value(true))
+            .andExpect(jsonPath("$.result.signupCompleted").value(false))
+            .andExpect(jsonPath("$.result.accessToken").isNotEmpty())
+            .andExpect(jsonPath("$.result.refreshToken").isNotEmpty());
+
+        // 같은 카카오 계정으로 앱 로그인하면 같은 회원
+        mockMvc.perform(post("/api/auth/kakao")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"kakaoAccessToken\":\"kakao-token-from-code\"}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.result.isNewMember").value(false));
+    }
+
+    @Test
+    void 웹_카카오_로그인_인가_코드가_유효하지_않으면_401() throws Exception {
+        given(kakaoApiClient.exchangeCode(anyString(), anyString()))
+            .willThrow(new GeneralException(AuthErrorStatus.INVALID_KAKAO_CODE));
+
+        mockMvc.perform(post("/api/auth/kakao/code")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"code\":\"used-code\",\"redirectUri\":\"http://localhost:3000/auth/kakao/callback\"}"))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.code").value("AUTH_4014"));
+    }
+
+    @Test
+    void 웹_카카오_로그인_code나_redirectUri가_없으면_400() throws Exception {
+        mockMvc.perform(post("/api/auth/kakao/code")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"code\":\"auth-code\"}"))
+            .andExpect(status().isBadRequest());
+        mockMvc.perform(post("/api/auth/kakao/code")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"code\":\" \",\"redirectUri\":\"http://localhost:3000/auth/kakao/callback\"}"))
+            .andExpect(status().isBadRequest());
     }
 
     @Test
