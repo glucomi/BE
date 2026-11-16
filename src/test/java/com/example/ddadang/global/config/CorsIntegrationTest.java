@@ -12,6 +12,7 @@ import org.springframework.http.HttpHeaders;
 class CorsIntegrationTest extends IntegrationTest {
 
     private static final String FRONT_ORIGIN = "https://ddadang.vercel.app";
+    private static final String LOCAL_ORIGIN = "http://localhost:3000";
 
     @Test
     void 허용된_origin의_preflight는_인증_없이_통과한다() throws Exception {
@@ -22,6 +23,15 @@ class CorsIntegrationTest extends IntegrationTest {
             .andExpect(status().isOk())
             .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, FRONT_ORIGIN))
             .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, "authorization, content-type"));
+    }
+
+    @Test
+    void 로컬_개발_origin의_preflight도_통과한다() throws Exception {
+        mockMvc.perform(options("/api/weight-records/latest")
+                .header(HttpHeaders.ORIGIN, LOCAL_ORIGIN)
+                .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET"))
+            .andExpect(status().isOk())
+            .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, LOCAL_ORIGIN));
     }
 
     @Test
