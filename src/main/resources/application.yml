@@ -37,7 +37,10 @@ jwt:
 cors:
   allowed-origins:
     - https://ddadang.vercel.app
-    - http://localhost:3000
+  # 로컬 개발: 포트와 무관하게 허용
+  allowed-origin-patterns:
+    - http://localhost:*
+    - http://127.0.0.1:*
 
 kakao:
   api-base-url: https://kapi.kakao.com

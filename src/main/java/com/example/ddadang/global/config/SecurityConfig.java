@@ -21,7 +21,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 /**
  * JWT 기반 stateless 인증. 로그인/토큰 재발급, 약관 목록, CGM OAuth 콜백(브라우저 리다이렉트),
  * Swagger 문서만 공개하고 나머지는 access token이 필요하다.
- * CORS는 cors.allowed-origins에 등록된 프론트엔드 origin만 허용한다.
+ * CORS는 cors.allowed-origins / cors.allowed-origin-patterns에 등록된 프론트엔드 origin만 허용한다.
  */
 @Configuration
 @EnableConfigurationProperties(CorsProperties.class)
@@ -65,6 +65,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(corsProperties.allowedOrigins());
+        config.setAllowedOriginPatterns(corsProperties.allowedOriginPatterns());
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setMaxAge(3600L);
