@@ -37,6 +37,7 @@ jwt:
 cors:
   allowed-origins:
     - https://ddadang.vercel.app
+    - http://localhost:3000
 
 kakao:
   api-base-url: https://kapi.kakao.com
