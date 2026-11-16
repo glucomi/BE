@@ -232,6 +232,7 @@ erDiagram
         bigint member_id FK
         bigint member_medication_id FK
         datetime taken_at
+        varchar product_name "기록 시점 입력값(수정 가능)"
         varchar memo
     }
 

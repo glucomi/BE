@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public record MealRecordCreateRequest(
+public record MealRecordRequest(
     @Schema(description = "식사 일시", example = "2026-09-28T12:30:00") @NotNull LocalDateTime eatenAt,
     @Schema(description = "메모(선택, 최대 1000자)") @Size(max = 1000) String memo,
     @Schema(description = "담은 음식 목록") @NotEmpty @Size(max = 30) @Valid List<Item> items

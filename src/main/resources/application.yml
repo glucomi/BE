@@ -33,6 +33,12 @@ jwt:
   access-token-validity: 1h
   refresh-token-validity: 14d
 
+# 브라우저에서 API를 호출할 수 있는 프론트엔드 origin
+cors:
+  allowed-origins:
+    - https://ddadang.vercel.app
+    - http://localhost:3000
+
 kakao:
   api-base-url: https://kapi.kakao.com
 

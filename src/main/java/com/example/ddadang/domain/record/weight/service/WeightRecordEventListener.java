@@ -23,7 +23,7 @@ public class WeightRecordEventListener {
     public void handleOnboardingCompleted(OnboardingCompletedEvent event) {
         weightRecordRepository.save(new WeightRecord(
             memberRepository.getReferenceById(event.memberId()),
-            event.completedAt(),
+            event.completedAt().toLocalDate().atStartOfDay(), // 체중은 날짜 단위(하루 1건)
             event.weightKg()
         ));
     }
