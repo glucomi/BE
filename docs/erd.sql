@@ -298,12 +298,17 @@ CREATE TABLE `medication_record` (
 
 CREATE TABLE `exercise` (
     `id`          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '운동 ID',
+    `code`        VARCHAR(10)  NULL COMMENT '운동 DB 원본코드',
+    `category`    VARCHAR(30)  NULL COMMENT '분류',
     `name`        VARCHAR(100) NOT NULL COMMENT '운동명',
-    `met`         DECIMAL(4,1) NOT NULL COMMENT 'MET(kcal 계산용)',
+    `name_en`     VARCHAR(200) NULL COMMENT '영문명(원문)',
+    `name_ja`     VARCHAR(200) NULL COMMENT '일문명(원문)',
+    `met`         DECIMAL(4,1) NOT NULL COMMENT 'MET (kcal = MET × 체중(kg) × 운동시간(분) ÷ 60)',
     `popular`     BOOLEAN      NOT NULL DEFAULT FALSE COMMENT '인기 운동 여부',
     `created_at`  DATETIME     NOT NULL COMMENT '생성 일시',
     `updated_at`  DATETIME     NOT NULL COMMENT '수정 일시',
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_exercise_code` (`code`)
 ) COMMENT '운동';
 
 CREATE TABLE `exercise_record` (
