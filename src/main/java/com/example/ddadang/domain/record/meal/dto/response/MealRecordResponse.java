@@ -1,5 +1,6 @@
 package com.example.ddadang.domain.record.meal.dto.response;
 
+import com.example.ddadang.domain.photo.dto.PhotoResponse;
 import com.example.ddadang.domain.record.meal.dto.NutrientsDto;
 import com.example.ddadang.domain.record.meal.entity.MealRecord;
 import com.example.ddadang.domain.record.meal.entity.MealRecordItem;
@@ -17,12 +18,15 @@ public record MealRecordResponse(
     LocalDateTime eatenAt,
     String memo,
     List<Item> items,
-    @Schema(description = "메뉴 합계") Total total
+    @Schema(description = "메뉴 합계") Total total,
+    @Schema(description = "첨부 사진(첨부 순서)") List<PhotoResponse> photos
 ) {
 
-    public static MealRecordResponse from(MealRecord record) {
+    public static MealRecordResponse from(MealRecord record, List<PhotoResponse> photos) {
         List<Item> items = record.getItems().stream().map(Item::from).toList();
-        return new MealRecordResponse(record.getId(), record.getEatenAt(), record.getMemo(), items, Total.of(record));
+        return new MealRecordResponse(
+            record.getId(), record.getEatenAt(), record.getMemo(), items, Total.of(record), photos
+        );
     }
 
     public record Item(
