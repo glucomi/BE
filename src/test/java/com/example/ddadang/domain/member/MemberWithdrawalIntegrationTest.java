@@ -35,7 +35,7 @@ class MemberWithdrawalIntegrationTest extends IntegrationTest {
             .willReturn(new KakaoUserResponse(2001L, new KakaoAccount(new Profile("탈퇴회원"))));
         String login = mockMvc.perform(post("/api/auth/kakao")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"accessToken\":\"kakao-token\"}"))
+                .content("{\"kakaoAccessToken\":\"kakao-token\"}"))
             .andExpect(status().isOk())
             .andReturn().getResponse().getContentAsString();
         Integer memberId = JsonPath.read(login, "$.result.memberId");
@@ -64,7 +64,7 @@ class MemberWithdrawalIntegrationTest extends IntegrationTest {
 
         mockMvc.perform(post("/api/auth/kakao")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"accessToken\":\"kakao-token\"}"))
+                .content("{\"kakaoAccessToken\":\"kakao-token\"}"))
             .andExpect(status().isForbidden())
             .andExpect(jsonPath("$.code").value("AUTH_4030"));
     }
