@@ -10,6 +10,11 @@ spring:
     username: ${DB_USER}
     password: ${DB_PW}
 
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 11MB
+
   jpa:
     database: mysql
     database-platform: org.hibernate.dialect.MySQLDialect
@@ -58,3 +63,10 @@ glucose:
 food:
   sample-data:
     enabled: true
+
+# 사진 저장소(S3, 비공개 버킷). 자격 증명은 EC2 IAM 역할(인스턴스 프로파일) 또는 AWS_* 환경변수를 사용한다.
+storage:
+  s3:
+    bucket: ${S3_BUCKET:}
+    region: ${AWS_REGION:ap-northeast-2}
+    presigned-url-validity: 1h

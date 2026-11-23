@@ -15,6 +15,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
@@ -106,5 +107,28 @@ public class Member extends BaseTimeEntity {
     public void completeSignup(boolean marketingAgreed) {
         this.signupCompleted = true;
         this.marketingAgreed = marketingAgreed;
+    }
+
+    public void withdraw(LocalDateTime now) {
+        this.status = MemberStatus.WITHDRAWN;
+        this.deletedAt = now;
+    }
+
+    public boolean isWithdrawn() {
+        return status == MemberStatus.WITHDRAWN;
+    }
+
+    /** 탈퇴 후 restriction 기간이 지났는지 */
+    public boolean canRejoin(LocalDateTime now, Duration restriction) {
+        return isWithdrawn() && deletedAt != null && !deletedAt.plus(restriction).isAfter(now);
+    }
+
+    /**
+     * 재가입 시 같은 소셜 계정으로 새 회원을 만들 수 있도록 탈퇴 회원의 provider_id를 비운다(유니크 제약 해제).
+     * 원래 값은 "withdrawn:{회원ID}:{provider_id}" 형태로 남긴다.
+     */
+    public void releaseProviderId() {
+        String released = "withdrawn:" + id + ":" + providerId;
+        this.providerId = released.length() > 100 ? released.substring(0, 100) : released;
     }
 }

@@ -1,6 +1,7 @@
 package com.example.ddadang.domain.record.meal.service;
 
 import com.example.ddadang.domain.member.repository.MemberRepository;
+import com.example.ddadang.domain.photo.service.PhotoService;
 import com.example.ddadang.domain.record.meal.dto.request.MealRecordRequest;
 import com.example.ddadang.domain.record.meal.dto.response.MealRecordResponse;
 import com.example.ddadang.domain.record.meal.entity.Food;
@@ -22,12 +23,14 @@ public class MealRecordService {
     private final MealRecordRepository mealRecordRepository;
     private final MemberRepository memberRepository;
     private final FoodService foodService;
+    private final PhotoService photoService;
 
     @Transactional
     public MealRecordResponse create(Long memberId, MealRecordRequest request) {
         MealRecord record = new MealRecord(memberRepository.getReferenceById(memberId), request.eatenAt(), memo(request));
         addItems(memberId, record, request.items());
-        return MealRecordResponse.from(mealRecordRepository.save(record));
+        record.replacePhotos(photoService.validateOwned(memberId, request.photoIds()));
+        return toResponse(mealRecordRepository.save(record));
     }
 
     /**
@@ -38,8 +41,9 @@ public class MealRecordService {
         MealRecord record = getOwned(memberId, mealRecordId);
         record.update(request.eatenAt(), memo(request));
         addItems(memberId, record, request.items());
+        record.replacePhotos(photoService.validateOwned(memberId, request.photoIds()));
         mealRecordRepository.flush(); // 새 메뉴 ID를 응답에 담기 위해 즉시 반영
-        return MealRecordResponse.from(record);
+        return toResponse(record);
     }
 
     @Transactional
@@ -55,13 +59,17 @@ public class MealRecordService {
         return mealRecordRepository
             .findByMemberIdAndEatenAtGreaterThanEqualAndEatenAtLessThanOrderByEatenAtAsc(memberId, from, to)
             .stream()
-            .map(MealRecordResponse::from)
+            .map(this::toResponse)
             .toList();
     }
 
     @Transactional(readOnly = true)
     public MealRecordResponse get(Long memberId, Long mealRecordId) {
-        return MealRecordResponse.from(getOwned(memberId, mealRecordId));
+        return toResponse(getOwned(memberId, mealRecordId));
+    }
+
+    private MealRecordResponse toResponse(MealRecord record) {
+        return MealRecordResponse.from(record, photoService.getPhotos(record.getPhotoIds()));
     }
 
     private MealRecord getOwned(Long memberId, Long mealRecordId) {

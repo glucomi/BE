@@ -14,7 +14,9 @@ import java.util.List;
 public record MealRecordRequest(
     @Schema(description = "식사 일시", example = "2026-09-28T12:30:00") @NotNull LocalDateTime eatenAt,
     @Schema(description = "메모(선택, 최대 1000자)") @Size(max = 1000) String memo,
-    @Schema(description = "담은 음식 목록") @NotEmpty @Size(max = 30) @Valid List<Item> items
+    @Schema(description = "담은 음식 목록") @NotEmpty @Size(max = 30) @Valid List<Item> items,
+    @Schema(description = "첨부 사진 ID 목록(선택, 최대 10장, POST /api/photos 응답의 photoId). 수정 시 이 목록으로 교체된다.")
+    @Size(max = 10) List<@NotNull Long> photoIds
 ) {
 
     public record Item(
