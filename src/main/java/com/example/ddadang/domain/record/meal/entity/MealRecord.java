@@ -3,7 +3,9 @@ package com.example.ddadang.domain.record.meal.entity;
 import com.example.ddadang.domain.member.entity.Member;
 import com.example.ddadang.global.entity.BaseTimeEntity;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -13,6 +15,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -20,6 +23,7 @@ import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(name = "meal_record", indexes = @Index(name = "idx_meal_record_member_eaten_at", columnList = "member_id, eaten_at"))
@@ -44,6 +48,14 @@ public class MealRecord extends BaseTimeEntity {
     @OneToMany(mappedBy = "mealRecord", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MealRecordItem> items = new ArrayList<>();
 
+    /** 첨부 사진 ID(표시 순서 유지, 최대 10장) */
+    @ElementCollection
+    @CollectionTable(name = "meal_record_photo", joinColumns = @JoinColumn(name = "meal_record_id"))
+    @OrderColumn(name = "sort_order")
+    @Column(name = "photo_id", nullable = false)
+    @BatchSize(size = 100)
+    private List<Long> photoIds = new ArrayList<>();
+
     public MealRecord(Member member, LocalDateTime eatenAt, String memo) {
         this.member = member;
         this.eatenAt = eatenAt;
@@ -61,6 +73,11 @@ public class MealRecord extends BaseTimeEntity {
         this.eatenAt = eatenAt;
         this.memo = memo;
         items.clear();
+    }
+
+    public void replacePhotos(List<Long> photoIds) {
+        this.photoIds.clear();
+        this.photoIds.addAll(photoIds);
     }
 
     public boolean isOwnedBy(Long memberId) {

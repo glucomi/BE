@@ -38,3 +38,9 @@ kakao:
   api-base-url: http://localhost:0
   auth-base-url: http://localhost:0
   client-id: test-kakao-rest-api-key
+
+storage:
+  s3:
+    bucket: test-bucket
+    region: ap-northeast-2
+    presigned-url-validity: 1h

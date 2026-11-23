@@ -1,5 +1,6 @@
 package com.example.ddadang.global.exception;
 
+import com.example.ddadang.domain.photo.status.PhotoErrorStatus;
 import com.example.ddadang.global.response.ApiResponse;
 import com.example.ddadang.global.response.ErrorStatus;
 import java.util.stream.Collectors;
@@ -11,6 +12,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -32,10 +36,17 @@ public class GlobalExceptionHandler {
         HandlerMethodValidationException.class,
         HttpMessageNotReadableException.class,
         MissingServletRequestParameterException.class,
-        MethodArgumentTypeMismatchException.class
+        MethodArgumentTypeMismatchException.class,
+        MissingServletRequestPartException.class,
+        MultipartException.class
     })
     public ResponseEntity<ApiResponse<Void>> handleBadRequest(Exception e) {
         return badRequest(ErrorStatus.BAD_REQUEST.getMessage());
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMaxUploadSize(MaxUploadSizeExceededException e) {
+        return ApiResponse.failure(PhotoErrorStatus.FILE_TOO_LARGE, null);
     }
 
     private ResponseEntity<ApiResponse<Void>> badRequest(String message) {
