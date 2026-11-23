@@ -4,6 +4,7 @@ import com.example.ddadang.domain.member.client.KakaoApiClient;
 import com.example.ddadang.domain.member.entity.Member;
 import com.example.ddadang.domain.member.enums.SocialProvider;
 import com.example.ddadang.domain.member.repository.MemberRepository;
+import com.example.ddadang.domain.photo.storage.PhotoStorage;
 import com.example.ddadang.global.security.jwt.JwtProvider;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * H2(MySQL 모드) + MockMvc 통합 테스트 베이스. 외부 카카오 API는 목으로 대체한다.
+ * H2(MySQL 모드) + MockMvc 통합 테스트 베이스. 외부 카카오 API와 사진 저장소(S3)는 목으로 대체한다.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -30,6 +31,9 @@ public abstract class IntegrationTest {
 
     @MockitoBean
     protected KakaoApiClient kakaoApiClient;
+
+    @MockitoBean
+    protected PhotoStorage photoStorage;
 
     protected Member createMember() {
         return memberRepository.save(
