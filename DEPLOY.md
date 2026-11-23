@@ -128,3 +128,27 @@ i-sens 개발자센터 콘솔의 Callback URL도 이 https 주소로 등록/변�
 ```bash
 curl https://<sslip.io 도메인>/api/cgm/readings
 ```
+
+## 6. 사진 저장소 (S3)
+
+사진 업로드(`POST /api/photos`)는 비공개 S3 버킷에 저장하고 presigned URL(1시간)로 내려준다.
+
+1. S3 버킷 생성: 리전 `ap-northeast-2`, **퍼블릭 액세스 차단 유지**
+2. IAM 역할 생성(신뢰 대상: EC2) 후 아래 정책만 붙인다. 루트 계정 키는 사용하지 않는다.
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [{
+       "Effect": "Allow",
+       "Action": ["s3:PutObject", "s3:GetObject"],
+       "Resource": "arn:aws:s3:::<버킷명>/photos/*"
+     }]
+   }
+   ```
+3. EC2 콘솔 → 인스턴스 → 작업 → 보안 → IAM 역할 수정에서 위 역할 연결
+4. 컨테이너 안에서 역할 자격 증명을 받으려면 메타데이터 hop limit을 2로 올린다
+   ```bash
+   aws ec2 modify-instance-metadata-options --instance-id <인스턴스 ID> --http-put-response-hop-limit 2 --http-endpoint enabled
+   ```
+5. 서버 `.env`에 `S3_BUCKET=<버킷명>`, `AWS_REGION=ap-northeast-2` 추가 후 재시작
+
