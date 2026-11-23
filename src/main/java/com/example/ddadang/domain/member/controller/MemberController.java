@@ -55,7 +55,8 @@ public class MemberController {
     @Operation(
         summary = "회원 탈퇴",
         description = "탈퇴 사유를 저장하고 회원을 탈퇴 상태로 바꾼다. refresh token이 삭제되어 재발급이 불가하고, "
-            + "이후 같은 카카오 계정으로 로그인하면 403 AUTH_4030. 이미 탈퇴한 회원이면 403 AUTH_4030."
+            + "탈퇴 후 30일 동안 같은 카카오 계정으로 로그인하면 403 AUTH_4031, 30일이 지나면 새 회원으로 가입된다. "
+            + "이미 탈퇴한 회원이면 403 AUTH_4030."
     )
     @PostMapping("/api/members/me/withdrawal")
     public ResponseEntity<ApiResponse<Void>> withdraw(
