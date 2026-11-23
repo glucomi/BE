@@ -107,4 +107,13 @@ public class Member extends BaseTimeEntity {
         this.signupCompleted = true;
         this.marketingAgreed = marketingAgreed;
     }
+
+    public void withdraw(LocalDateTime now) {
+        this.status = MemberStatus.WITHDRAWN;
+        this.deletedAt = now;
+    }
+
+    public boolean isWithdrawn() {
+        return status == MemberStatus.WITHDRAWN;
+    }
 }
