@@ -13,6 +13,7 @@ import com.example.ddadang.domain.member.repository.RefreshTokenRepository;
 import com.example.ddadang.domain.member.status.AuthErrorStatus;
 import com.example.ddadang.domain.member.status.MemberErrorStatus;
 import com.example.ddadang.global.exception.GeneralException;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -27,6 +28,7 @@ public class MemberService {
     private final MemberWithdrawalRepository memberWithdrawalRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final Clock clock;
 
     @Transactional(readOnly = true)
     public MemberResponse getMe(Long memberId) {
@@ -68,7 +70,7 @@ public class MemberService {
         if (member.isWithdrawn()) {
             throw new GeneralException(AuthErrorStatus.WITHDRAWN_MEMBER);
         }
-        member.withdraw(LocalDateTime.now());
+        member.withdraw(LocalDateTime.now(clock));
         memberWithdrawalRepository.save(new MemberWithdrawal(memberId, request.reason()));
         refreshTokenRepository.deleteByMemberId(memberId);
     }
