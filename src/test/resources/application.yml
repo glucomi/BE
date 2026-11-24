@@ -38,6 +38,7 @@ kakao:
   api-base-url: http://localhost:0
   auth-base-url: http://localhost:0
   client-id: test-kakao-rest-api-key
+  allowed-redirect-uris: https://ddadang.vercel.app/auth/kakao/callback,http://localhost:5000/auth/kakao/callback
 
 storage:
   s3:
