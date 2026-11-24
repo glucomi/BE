@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum AuthErrorStatus implements BaseCode {
 
+    INVALID_REDIRECT_URI(HttpStatus.BAD_REQUEST, "AUTH_4000", "등록되지 않은 redirect URI입니다."),
+    INVALID_STATE(HttpStatus.BAD_REQUEST, "AUTH_4001", "state 형식이 올바르지 않습니다. (영문, 숫자, . _ ~ - 만 사용, 최대 128자)"),
     INVALID_KAKAO_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_4010", "카카오 토큰이 유효하지 않습니다."),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_4011", "유효하지 않은 토큰입니다."),
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_4012", "만료된 토큰입니다."),
